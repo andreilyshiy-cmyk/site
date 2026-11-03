@@ -3,22 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutor.Hub — Образовательный Центр</title>
+    <title>Tutor.Hub — Образовательная Платформа</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #canvas-web {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 0; pointer-events: none;
-        }
+        #canvas-web { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
         .content-layer { position: relative; z-index: 10; }
         .page-section { display: none; animation: fadeIn 0.4s ease-in-out forwards; }
         .page-section.active { display: block; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen relative overflow-x-hidden">
@@ -27,7 +19,7 @@
 
     <div class="content-layer min-h-screen flex flex-col">
         
-        <!-- Навигация -->
+        <!-- Хедер -->
         <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
             <div class="max-w-6xl mx-auto p-4 flex justify-between items-center">
                 <button onclick="showPage('home')" class="text-2xl font-black text-blue-500 tracking-wider flex items-center gap-2">
@@ -38,84 +30,82 @@
                     <button onclick="showPage('tariffs')" class="px-3 py-2 rounded-lg hover:bg-slate-800 transition">Тарифы</button>
                     <button onclick="showPage('schedule')" class="px-3 py-2 rounded-lg hover:bg-slate-800 transition">Расписание</button>
                     <button onclick="showPage('staff')" class="px-3 py-2 rounded-lg hover:bg-slate-800 transition">Штаб</button>
-                    <button onclick="showPage('cabinet')" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 font-bold transition">Кабинет</button>
+                    <button id="authNavBtn" onclick="showPage('auth')" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 font-bold transition">Войти / Регистрация</button>
                 </nav>
             </div>
         </header>
 
         <main class="max-w-5xl mx-auto p-6 flex-grow w-full">
 
-            <!-- 1. Главная -->
+            <!-- 1. СТРАНИЦА: Главная -->
             <section id="page-home" class="page-section active py-16 text-center">
                 <div class="inline-block p-2 px-4 bg-blue-900/40 border border-blue-500/30 rounded-full text-blue-400 text-xs font-bold mb-6">
-                    ✨ Подготовка к ЦЭ, ЦТ и школьной программе
+                    🚀 Онлайн-платформа подготовки к ЦЭ и ЦТ
                 </div>
                 <h1 class="text-5xl md:text-6xl font-black mb-6 leading-tight">
-                    Персональное обучение <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">с лучшими репетиторами</span>
+                    Образовательный Центр <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Нового Поколения</span>
                 </h1>
                 <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10">
-                    Индивидуальный подход, постоянная поддержка, разбор ДЗ и регулярные отчёты для родителей.
+                    Зарегистрируйтесь на сайте, подберите тариф и оставьте заявку на бесплатное вводное занятие.
                 </p>
                 <div class="flex justify-center gap-4">
-                    <button onclick="showPage('tariffs')" class="bg-blue-600 hover:bg-blue-500 font-bold px-8 py-4 rounded-xl shadow-lg transition">Посмотреть тарифы</button>
-                    <button onclick="showPage('schedule')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold px-8 py-4 rounded-xl transition">Расписание</button>
+                    <button onclick="showPage('tariffs')" class="bg-blue-600 hover:bg-blue-500 font-bold px-8 py-4 rounded-xl shadow-lg transition">Тарифы и Заявка</button>
+                    <button onclick="showPage('auth')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold px-8 py-4 rounded-xl transition">Создать аккаунт</button>
                 </div>
             </section>
 
-            <!-- 2. Тарифы (в BYN) и Заявка -->
+            <!-- 2. СТРАНИЦА: Тарифы и Подача Заявки -->
             <section id="page-tariffs" class="page-section space-y-10">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold mb-2">Тарифные планы</h2>
-                    <p class="text-slate-400">Стоимость занятий указана в белорусских рублях</p>
+                    <p class="text-slate-400">Цены указаны в белорусских рублях (BYN)</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
                         <div>
                             <h3 class="text-xl font-bold mb-2">Базовый</h3>
-                            <p class="text-3xl font-black text-blue-400 mb-4">35 BYN <span class="text-xs text-slate-500 font-normal">/ занятие</span></p>
+                            <p class="text-3xl font-black text-blue-400 mb-4">35 BYN <span class="text-xs text-slate-500 font-normal">/ урок</span></p>
                             <ul class="text-sm space-y-2 text-slate-300 mb-6">
-                                <li>✅ Занятия в мини-группе</li>
-                                <li>✅ Учебные материалы</li>
-                                <li>❌ Проверка ДЗ с разбором</li>
+                                <li>✅ Занятие в группы до 6 человек</li>
+                                <li>✅ Базовые конспекты</li>
                             </ul>
                         </div>
-                        <button onclick="selectTariff('Базовый (35 BYN)')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Записаться</button>
+                        <button onclick="selectTariff('Базовый (35 BYN)')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Выбрать</button>
                     </div>
 
                     <div class="bg-slate-900/90 border-2 border-blue-500 p-6 rounded-2xl flex flex-col justify-between relative shadow-xl shadow-blue-500/10">
                         <span class="absolute -top-3 right-4 bg-blue-500 text-xs font-bold px-3 py-1 rounded-full">Популярный</span>
                         <div>
                             <h3 class="text-xl font-bold mb-2">Продвинутый</h3>
-                            <p class="text-3xl font-black text-blue-400 mb-4">80 BYN <span class="text-xs text-slate-500 font-normal">/ занятие</span></p>
+                            <p class="text-3xl font-black text-blue-400 mb-4">80 BYN <span class="text-xs text-slate-500 font-normal">/ урок</span></p>
                             <ul class="text-sm space-y-2 text-slate-300 mb-6">
-                                <li>✅ Занятия в мини-группе</li>
-                                <li>✅ Полная проверка ДЗ</li>
-                                <li>✅ Тесты формата ЦЭ/ЦТ</li>
+                                <li>✅ Занятие в мини-группе</li>
+                                <li>✅ Проверка всех ДЗ с разбором</li>
+                                <li>✅ Доступ к тестам формата ЦЭ</li>
                             </ul>
                         </div>
-                        <button onclick="selectTariff('Продвинутый (80 BYN)')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-xl transition">Записаться</button>
+                        <button onclick="selectTariff('Продвинутый (80 BYN)')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-xl transition">Выбрать</button>
                     </div>
 
                     <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
                         <div>
                             <h3 class="text-xl font-bold mb-2">Индивидуальный VIP</h3>
-                            <p class="text-3xl font-black text-blue-400 mb-4">150 BYN <span class="text-xs text-slate-500 font-normal">/ занятие</span></p>
+                            <p class="text-3xl font-black text-blue-400 mb-4">150 BYN <span class="text-xs text-slate-500 font-normal">/ урок</span></p>
                             <ul class="text-sm space-y-2 text-slate-300 mb-6">
-                                <li>✅ Занятие 1-на-1 с преподаветелем</li>
-                                <li>✅ Персональный график</li>
-                                <li>✅ Связь 24/7</li>
+                                <li>✅ Занятия 1-на-1 с преподавателем</li>
+                                <li>✅ Гибкий график</li>
                             </ul>
                         </div>
-                        <button onclick="selectTariff('VIP (150 BYN)')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Записаться</button>
+                        <button onclick="selectTariff('VIP (150 BYN)')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Выбрать</button>
                     </div>
                 </div>
 
-                <!-- Форма подачи заявки -->
+                <!-- Форма отправки заявки -->
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl max-w-lg mx-auto">
                     <h3 class="text-xl font-bold mb-4 text-center">Оставить заявку на обучение</h3>
                     <div class="space-y-4">
-                        <input type="text" id="reqName" placeholder="Имя ученика / родителя" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
+                        <input type="text" id="reqName" placeholder="Ваше имя" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
                         <input type="text" id="reqContact" placeholder="Телефон или Telegram (@username)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
                         <input type="text" id="reqTariffInput" readonly placeholder="Выбранный тариф" class="w-full p-3 bg-slate-950 border border-slate-800 text-blue-400 font-bold rounded-xl">
                         <button onclick="sendRequest()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Отправить заявку</button>
@@ -124,42 +114,82 @@
                 </div>
             </section>
 
-            <!-- 3. Расписание -->
+            <!-- 3. СТРАНИЦА: Расписание -->
             <section id="page-schedule" class="page-section space-y-6">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold mb-2">📅 Расписание занятий</h2>
-                    <p class="text-slate-400">Предварительный график уроков</p>
+                    <p class="text-slate-400">Актуальный график уроков на неделю</p>
                 </div>
                 <div id="scheduleGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
-            <!-- 4. Штаб -->
+            <!-- 4. СТРАНИЦА: Штаб работников -->
             <section id="page-staff" class="page-section space-y-6">
                 <div class="text-center">
-                    <h2 class="text-3xl font-extrabold mb-2">👨‍🏫 Преподавательский штаб</h2>
-                    <p class="text-slate-400">Наши репетиторы и эксперты</p>
+                    <h2 class="text-3xl font-extrabold mb-2">👨‍🏫 Наш преподавательский штаб</h2>
+                    <p class="text-slate-400">Команда квалифицированных репетиторов</p>
                 </div>
-                <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
             </section>
 
-            <!-- 5. Кабинет учитель / админа -->
-            <section id="page-cabinet" class="page-section max-w-2xl mx-auto space-y-6">
-                <div id="loginBlock" class="bg-slate-900/90 border border-slate-800 p-8 rounded-2xl">
-                    <h2 class="text-2xl font-extrabold mb-6 text-center">🔑 Вход для преподавателей</h2>
-                    <div class="space-y-4">
-                        <input type="text" id="loginUsername" placeholder="Логин" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <input type="password" id="loginPassword" placeholder="Пароль" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
+            <!-- 5. СТРАНИЦА: Авторизация и Регистрация -->
+            <section id="page-auth" class="page-section max-w-md mx-auto space-y-6">
+                <div class="bg-slate-900/90 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+                    <div class="flex justify-center space-x-4 mb-6 border-b border-slate-800 pb-4">
+                        <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="font-bold text-blue-400 border-b-2 border-blue-400 pb-1">Вход</button>
+                        <button id="tabRegBtn" onclick="switchAuthTab('reg')" class="font-bold text-slate-500 pb-1">Регистрация</button>
+                    </div>
+
+                    <!-- Форма Входа -->
+                    <div id="formLogin" class="space-y-4">
+                        <input type="text" id="loginUsername" placeholder="Логин" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none">
+                        <input type="password" id="loginPassword" placeholder="Пароль" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none">
                         <button onclick="loginUser()" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-xl transition">Войти</button>
                     </div>
+
+                    <!-- Форма Регистрации -->
+                    <div id="formReg" class="space-y-4 hidden">
+                        <input type="text" id="regUsername" placeholder="Придумайте логин" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none">
+                        <input type="password" id="regPassword" placeholder="Придумайте пароль" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none">
+                        <button onclick="registerUser()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Зарегистрироваться</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. СТРАНИЦА: Личный Кабинет & Админка -->
+            <section id="page-cabinet" class="page-section max-w-3xl mx-auto space-y-6">
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-black" id="cabUserTitle">Личный кабинет</h2>
+                        <p class="text-xs text-blue-400 font-bold" id="cabUserRole">Роль: Загрузка...</p>
+                    </div>
+                    <button onclick="logout()" class="text-xs bg-red-900/50 hover:bg-red-800 text-red-200 p-2 px-4 rounded-lg font-bold">Выйти</button>
                 </div>
 
-                <div id="teacherDashboard" class="hidden space-y-6">
-                    <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl">
-                        <h3 class="text-xl font-bold mb-4 flex justify-between items-center">
-                            <span>📋 Полученные заявки на обучение</span>
-                            <button onclick="loadRequests()" class="text-xs bg-slate-800 p-2 rounded-lg">Обновить</button>
-                        </h3>
-                        <div id="requestsList" class="space-y-3">Загрузка...</div>
+                <!-- Блок просмотра полученных заявок (Для Учителей и Админов) -->
+                <div id="adminRequestsBlock" class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl">
+                    <h3 class="text-xl font-bold mb-4 flex justify-between items-center">
+                        <span>📋 Полученные заявки на обучение</span>
+                        <button onclick="loadRequests()" class="text-xs bg-slate-800 p-2 rounded-lg">Обновить</button>
+                    </h3>
+                    <div id="requestsList" class="space-y-3">Загрузка заявок...</div>
+                </div>
+
+                <!-- Панель управления ролями (Управление с вашего компьютера) -->
+                <div id="superAdminBlock" class="bg-slate-900/90 border-2 border-emerald-500/50 p-6 rounded-2xl">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400 flex items-center gap-2">
+                        👑 Назначение ролей пользователям
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-2">
+                            <input type="text" id="roleTargetUsername" placeholder="Логин пользователя" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                            <select id="roleSelect" class="p-3 bg-slate-950 border border-slate-800 rounded-xl font-bold">
+                                <option value="teacher">Учитель (teacher)</option>
+                                <option value="admin">Администратор (admin)</option>
+                                <option value="student">Ученик (student)</option>
+                            </select>
+                        </div>
+                        <button onclick="assignRole()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Назначить роль</button>
                     </div>
                 </div>
             </section>
@@ -169,11 +199,26 @@
 
     <script>
         const API_URL = "https://edu-tutor-backend.onrender.com";
+        let currentUser = null;
 
         function showPage(pageId) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(`page-${pageId}`).classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchAuthTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('formLogin').classList.remove('hidden');
+                document.getElementById('formReg').classList.add('hidden');
+                document.getElementById('tabLoginBtn').className = "font-bold text-blue-400 border-b-2 border-blue-400 pb-1";
+                document.getElementById('tabRegBtn').className = "font-bold text-slate-500 pb-1";
+            } else {
+                document.getElementById('formReg').classList.remove('hidden');
+                document.getElementById('formLogin').classList.add('hidden');
+                document.getElementById('tabRegBtn').className = "font-bold text-emerald-400 border-b-2 border-emerald-400 pb-1";
+                document.getElementById('tabLoginBtn').className = "font-bold text-slate-500 pb-1";
+            }
         }
 
         function selectTariff(tariff) {
@@ -182,15 +227,73 @@
             document.getElementById('reqName').focus();
         }
 
+        async function registerUser() {
+            const u = document.getElementById('regUsername').value.trim();
+            const p = document.getElementById('regPassword').value.trim();
+            if (!u || !p) return alert("Заполните логин и пароль!");
+
+            try {
+                let res = await fetch(`${API_URL}/api/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                let json = await res.json();
+                if (!res.ok) throw new Error(json.detail);
+                alert(json.message);
+                switchAuthTab('login');
+            } catch(e) { alert(e.message); }
+        }
+
+        async function loginUser() {
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            if (!u || !p) return alert("Заполните логин и пароль!");
+
+            try {
+                let res = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                let json = await res.json();
+                if (!res.ok) throw new Error(json.detail);
+
+                currentUser = json;
+                document.getElementById('authNavBtn').innerText = `Кабинет (${json.username})`;
+                document.getElementById('authNavBtn').onclick = () => showPage('cabinet');
+                
+                document.getElementById('cabUserTitle').innerText = `👋 Привет, ${json.username}`;
+                document.getElementById('cabUserRole').innerText = `Ваша роль: ${json.role}`;
+
+                loadRequests();
+                showPage('cabinet');
+            } catch(e) { alert(e.message); }
+        }
+
+        async function assignRole() {
+            const target = document.getElementById('roleTargetUsername').value.trim();
+            const role = document.getElementById('roleSelect').value;
+            if (!target) return alert("Введите логин пользователя!");
+
+            try {
+                let res = await fetch(`${API_URL}/api/admin/assign-role`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ target_username: target, new_role: role })
+                });
+                let json = await res.json();
+                if (!res.ok) throw new Error(json.detail);
+                alert(json.message);
+            } catch(e) { alert(e.message); }
+        }
+
         async function sendRequest() {
             const name = document.getElementById('reqName').value.trim();
             const contact = document.getElementById('reqContact').value.trim();
             const tariff = document.getElementById('reqTariffInput').value;
 
-            if (!name || !contact) {
-                alert("Заполните имя и контакты!");
-                return;
-            }
+            if (!name || !contact) return alert("Заполните имя и контактные данные!");
 
             try {
                 let res = await fetch(`${API_URL}/api/request`, {
@@ -203,70 +306,66 @@
                 box.classList.remove('hidden');
                 box.className = "mt-4 p-3 rounded-xl text-center text-sm font-bold bg-emerald-900 text-emerald-200";
                 box.innerText = json.message;
-            } catch (e) { alert("Ошибка сохранения заявки!"); }
-        }
-
-        async function loginUser() {
-            const u = document.getElementById('loginUsername').value;
-            const p = document.getElementById('loginPassword').value;
-            try {
-                let res = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: u, password: p })
-                });
-                let json = await res.json();
-                if (!res.ok) throw new Error(json.detail);
-                
-                document.getElementById('loginBlock').classList.add('hidden');
-                document.getElementById('teacherDashboard').classList.remove('hidden');
-                loadRequests();
-            } catch (err) { alert(err.message); }
+            } catch(e) { alert("Ошибка сохранения заявки"); }
         }
 
         async function loadRequests() {
-            let res = await fetch(`${API_URL}/api/requests`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(r => {
-                html += `<div class="p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-lg">${r.student_name}</h4>
-                        <p class="text-xs text-blue-400">Контакт: ${r.contact}</p>
-                        <p class="text-xs text-slate-400">Тариф: ${r.tariff}</p>
-                    </div>
-                    <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-1 rounded font-bold">${r.status}</span>
-                </div>`;
-            });
-            document.getElementById('requestsList').innerHTML = html || "<p class='text-slate-500'>Заявок пока нет.</p>";
+            try {
+                let res = await fetch(`${API_URL}/api/requests`);
+                let items = await res.json();
+                let html = "";
+                items.forEach(r => {
+                    html += `<div class="p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-lg">${r.student_name}</h4>
+                            <p class="text-xs text-blue-400">Контакты: ${r.contact}</p>
+                            <p class="text-xs text-slate-400">Тариф: ${r.tariff}</p>
+                        </div>
+                        <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-1 rounded font-bold">${r.status}</span>
+                    </div>`;
+                });
+                document.getElementById('requestsList').innerHTML = html || "<p class='text-slate-500'>Заявок пока нет.</p>";
+            } catch(e) {}
         }
 
         async function loadSchedules() {
-            let res = await fetch(`${API_URL}/api/schedules`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(i => {
-                html += `<div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                    <span class="text-xs bg-blue-900/60 text-blue-300 px-2.5 py-1 rounded-full font-bold">${i.day} в ${i.time}</span>
-                    <h4 class="font-bold text-lg mt-2">${i.subject}</h4>
-                    <p class="text-sm text-slate-400">Преподаватель: ${i.teacher}</p>
-                </div>`;
-            });
-            document.getElementById('scheduleGrid').innerHTML = html;
+            try {
+                let res = await fetch(`${API_URL}/api/schedules`);
+                let items = await res.json();
+                let html = "";
+                items.forEach(i => {
+                    html += `<div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                        <span class="text-xs bg-blue-900/60 text-blue-300 px-2.5 py-1 rounded-full font-bold">${i.day} в ${i.time}</span>
+                        <h4 class="font-bold text-lg mt-2">${i.subject}</h4>
+                        <p class="text-sm text-slate-400">Преподаватель: ${i.teacher}</p>
+                    </div>`;
+                });
+                document.getElementById('scheduleGrid').innerHTML = html;
+            } catch(e) {}
         }
 
         async function loadStaff() {
-            let res = await fetch(`${API_URL}/api/staff`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(s => {
-                html += `<div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 text-center">
-                    <img src="${s.photo_url}" class="w-24 h-24 mx-auto rounded-full object-cover mb-3 border-2 border-blue-500/30">
-                    <h4 class="font-bold text-lg">${s.name}</h4>
-                    <p class="text-xs text-blue-400 font-bold">${s.subject}</p>
-                </div>`;
-            });
-            document.getElementById('staffGrid').innerHTML = html;
+            try {
+                let res = await fetch(`${API_URL}/api/staff`);
+                let items = await res.json();
+                let html = "";
+                items.forEach(s => {
+                    html += `<div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 text-center">
+                        <img src="${s.photo_url}" class="w-24 h-24 mx-auto rounded-full object-cover mb-3 border-2 border-blue-500/30">
+                        <h4 class="font-bold text-lg">${s.name}</h4>
+                        <p class="text-xs text-blue-400 font-bold">${s.subject}</p>
+                        <p class="text-xs text-slate-500 mt-1">${s.experience}</p>
+                    </div>`;
+                });
+                document.getElementById('staffGrid').innerHTML = html;
+            } catch(e) {}
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('authNavBtn').innerText = "Войти / Регистрация";
+            document.getElementById('authNavBtn').onclick = () => showPage('auth');
+            showPage('home');
         }
 
         window.onload = () => {
@@ -275,7 +374,7 @@
             initWebCanvas();
         };
 
-        // МЕДЛЕННАЯ И ПЛАВНАЯ ПАУТИНКА ЗВЁЗДОЧЕК
+        // МЕДЛЕННАЯ ПАУТИНКА
         function initWebCanvas() {
             const canvas = document.getElementById('canvas-web');
             const ctx = canvas.getContext('2d');
@@ -298,19 +397,15 @@
                 constructor() {
                     this.x = Math.random() * width;
                     this.y = Math.random() * height;
-                    // ОЧЕНЬ МЕДЛЕННОЕ ДВИЖЕНИЕ
                     this.vx = (Math.random() - 0.5) * 0.25;
                     this.vy = (Math.random() - 0.5) * 0.25;
                     this.radius = Math.random() * 1.8 + 1;
                 }
-
                 update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
+                    this.x += this.vx; this.y += this.vy;
                     if (this.x < 0 || this.x > width) this.vx *= -1;
                     if (this.y < 0 || this.y > height) this.vy *= -1;
                 }
-
                 draw() {
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
