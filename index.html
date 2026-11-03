@@ -3,738 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutor.Hub — Образовательный Центр</title>
+    <title>TutorControl — Admin Users Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #canvas-web { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
-        .content-layer { position: relative; z-index: 10; }
-        .page-section { display: none; opacity: 0; transform: translateY(8px); transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-        .page-section.active { display: block; opacity: 1; transform: translateY(0); }
-        .card-hover { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
-        .card-hover:hover { transform: translateY(-3px); }
-        #toast { transition: all 0.3s ease; }
+        body { background-color: #090d16; }
+        .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .badge-id { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen relative overflow-x-hidden">
+<body class="text-slate-200 font-sans min-h-screen p-4 md:p-8">
 
-    <canvas id="canvas-web"></canvas>
-
-    <!-- Всплывающий тост -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 bg-slate-900 border border-cyan-500/40 text-cyan-300 font-bold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
-        <span id="toastIcon">✨</span>
-        <span id="toastText">Уведомление</span>
-    </div>
-
-    <div class="content-layer min-h-screen flex flex-col">
+    <div class="max-w-6xl mx-auto space-y-6">
         
-        <header class="border-b border-slate-800/80 bg-[#0b0f19]/90 backdrop-blur-md sticky top-0 z-50">
-            <div class="max-w-6xl mx-auto p-4 flex justify-between items-center">
-                <button onclick="showPage('home')" class="text-2xl font-black text-cyan-400 tracking-wider flex items-center gap-2">
-                    ⚡ <span>TUTOR.HUB</span>
-                </button>
-                <nav class="flex items-center space-x-1 md:space-x-2 text-xs md:text-sm font-semibold">
-                    <button onclick="showPage('home')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Главная</button>
-                    <button onclick="showPage('tariffs')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Тарифы</button>
-                    <button id="navScheduleBtn" onclick="showPage('schedule')" class="hidden px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Расписание</button>
-                    <button onclick="showPage('staff')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Штаб</button>
-                    
-                    <button id="navUsersBtn" onclick="showPage('users')" class="hidden px-3 py-2 rounded-xl bg-purple-950/60 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 transition">👥 Пользователи</button>
-                    <button id="navReqBtn" onclick="showPage('requests')" class="hidden px-3 py-2 rounded-xl bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60 transition">📋 Заявки</button>
-                    <button id="navAdminScheduleBtn" onclick="showPage('admin-schedule')" class="hidden px-3 py-2 rounded-xl bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-900/60 transition">🗓️ Упр. Расписанием</button>
-
-                    <button id="authNavBtn" onclick="showPage('auth')" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold transition shadow-lg shadow-cyan-500/20">Войти</button>
-                </nav>
+        <!-- Шапка панели -->
+        <header class="glass-panel p-5 rounded-2xl flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-400 font-black text-xl">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-wide">TutorControl Admin</h1>
+                    <p class="text-xs text-slate-400">Управление пользователями и правами доступa</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="loadUsersList()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl transition">🔄 Обновить базу</button>
             </div>
         </header>
 
-        <main class="max-w-5xl mx-auto p-6 flex-grow w-full">
+        <!-- Поиск пользователя по ID -->
+        <div class="glass-panel p-4 rounded-2xl flex gap-3 items-center">
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider pl-2">Быстрый переход по ID:</span>
+            <input type="number" id="searchUserId" placeholder="Например: 1" class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-sm focus:outline-none focus:border-purple-500 w-36">
+            <button onclick="fetchSingleUser()" class="bg-purple-600 hover:bg-purple-500 text-xs font-bold px-4 py-2.5 rounded-xl transition">Открыть профиль</button>
+        </div>
 
-            <!-- Главная -->
-            <section id="page-home" class="page-section active py-20 text-center">
-                <div class="inline-block p-2 px-4 bg-cyan-950/60 border border-cyan-500/30 rounded-full text-cyan-300 text-xs font-bold mb-6">
-                    💎 Премиальная подготовка к экзаменам
+        <!-- Полноформатная карточка редактирования (Аналог /account/admin/users/{id}) -->
+        <div id="singleUserCard" class="glass-panel p-6 rounded-2xl space-y-6 hidden">
+            <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                <div>
+                    <span id="cardUserBadge" class="badge-id px-3 py-1 rounded-full text-xs font-bold">ID: #--</span>
+                    <h2 id="cardUsername" class="text-2xl font-black text-white mt-2">Username</h2>
                 </div>
-                <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
-                    Инвестируйте в знания, <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">которые меняют жизнь</span>
-                </h1>
-                <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10">
-                    Персональное распределение ролей и контроль учебного процесса.
-                </p>
-                <div class="flex justify-center gap-4">
-                    <button onclick="showPage('tariffs')" class="bg-cyan-600 hover:bg-cyan-500 font-bold px-8 py-4 rounded-2xl shadow-xl shadow-cyan-600/20 transition">Выбрать тариф</button>
-                    <button onclick="showPage('staff')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 font-bold px-8 py-4 rounded-2xl transition">Преподаватели</button>
+                <button onclick="closeCard()" class="text-slate-500 hover:text-white font-bold text-sm">✕ Закрыть</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase">Системная роль</label>
+                    <select id="cardRole" class="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-semibold focus:border-purple-500">
+                        <option value="guest">Гость (guest)</option>
+                        <option value="student">Ученик (student)</option>
+                        <option value="teacher">Преподаватель (teacher)</option>
+                        <option value="admin">Администратор (admin)</option>
+                    </select>
                 </div>
-            </section>
-
-            <!-- Тарифы -->
-            <section id="page-tariffs" class="page-section space-y-10">
-                <div class="text-center">
-                    <h2 class="text-3xl font-extrabold mb-2">Тарифные планы</h2>
-                    <p class="text-slate-400">Оплата в белорусских рублях (BYN)</p>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase">Тарифный план</label>
+                    <select id="cardTariff" class="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-semibold focus:border-purple-500">
+                        <option value="Не выбран">Не выбран</option>
+                        <option value="Базовый (35 BYN)">Базовый (35 BYN)</option>
+                        <option value="Продвинутый (80 BYN)">Продвинутый (80 BYN)</option>
+                        <option value="VIP (150 BYN)">VIP (150 BYN)</option>
+                    </select>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between card-hover">
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">Базовый</h3>
-                            <p class="text-3xl font-black text-cyan-400 mb-4">35 BYN <span class="text-xs text-slate-500 font-normal">/ урок</span></p>
-                            <ul class="text-sm space-y-2 text-slate-300 mb-6">
-                                <li>✅ Занятия в мини-группе</li>
-                                <li>✅ Базовые материалы</li>
-                            </ul>
-                        </div>
-                        <button onclick="selectTariff('Базовый (35 BYN)')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Выбрать</button>
-                    </div>
-
-                    <div class="bg-slate-900/80 border-2 border-cyan-500 p-6 rounded-2xl flex flex-col justify-between relative shadow-xl shadow-cyan-500/10 card-hover">
-                        <span class="absolute -top-3 right-4 bg-cyan-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full">Хит продаж</span>
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">Продвинутый</h3>
-                            <p class="text-3xl font-black text-cyan-400 mb-4">80 BYN <span class="text-xs text-slate-500 font-normal">/ урок</span></p>
-                            <ul class="text-sm space-y-2 text-slate-300 mb-6">
-                                <li>✅ Мини-группа до 4 человек</li>
-                                <li>✅ Полная проверка ДЗ</li>
-                                <li>✅ Пробные тесты ЦЭ</li>
-                            </ul>
-                        </div>
-                        <button onclick="selectTariff('Продвинутый (80 BYN)')" class="w-full bg-cyan-600 hover:bg-cyan-500 font-bold py-3 rounded-xl transition">Выбрать</button>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between card-hover">
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">VIP 1-на-1</h3>
-                            <p class="text-3xl font-black text-cyan-400 mb-4">150 BYN <span class="text-xs text-slate-500 font-normal">/ урок</span></p>
-                            <ul class="text-sm space-y-2 text-slate-300 mb-6">
-                                <li>✅ Личный репетитор</li>
-                                <li>✅ Индивидуальная программа</li>
-                            </ul>
-                        </div>
-                        <button onclick="selectTariff('VIP (150 BYN)')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Выбрать</button>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/80 border border-slate-800 p-8 rounded-2xl max-w-lg mx-auto">
-                    <h3 class="text-xl font-bold mb-4 text-center">Оставить заявку на обучение</h3>
-                    <div class="space-y-4">
-                        <input type="text" id="reqName" placeholder="Ваше имя" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-cyan-500">
-                        <input type="text" id="reqContact" placeholder="Телефон или Telegram (@username)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-cyan-500">
-                        <input type="text" id="reqTariffInput" readonly placeholder="Выберите тариф выше" class="w-full p-3 bg-slate-950 border border-slate-800 text-cyan-400 font-bold rounded-xl">
-                        <button onclick="sendRequest()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">Отправить заявку</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Расписание -->
-            <section id="page-schedule" class="page-section space-y-6">
-                <div class="text-center">
-                    <h2 class="text-3xl font-extrabold mb-2">📅 Расписание занятий</h2>
-                    <p class="text-slate-400">График предстоящих уроков</p>
-                </div>
-                <div id="scheduleGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </section>
-
-            <!-- Управление Расписанием (Админ) -->
-            <section id="page-admin-schedule" class="page-section max-w-4xl mx-auto space-y-6">
-                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-black text-cyan-400">🗓️ Управление расписанием</h2>
-                        <p class="text-xs text-slate-400 mt-1">Добавление и удаление предметов</p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-4">
-                    <h3 class="text-lg font-bold">➕ Добавить новое занятие</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input type="text" id="schDay" placeholder="День (Понедельник)" class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <input type="text" id="schTime" placeholder="Время (16:00 - 17:30)" class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <input type="text" id="schSubject" placeholder="Предмет (Математика)" class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <input type="text" id="schTeacher" placeholder="Преподаватель" class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    </div>
-                    <button onclick="addSchedule()" class="w-full bg-cyan-600 hover:bg-cyan-500 font-bold py-3 rounded-xl transition">Добавить занятие</button>
-                </div>
-
-                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-4">
-                    <h3 class="text-lg font-bold">🗑️ Текущие предметы</h3>
-                    <div id="adminScheduleList" class="space-y-3"></div>
-                </div>
-            </section>
-
-            <!-- Штаб -->
-            <section id="page-staff" class="page-section space-y-6">
-                <div class="text-center flex justify-between items-center flex-wrap gap-4">
-                    <div>
-                        <h2 class="text-3xl font-extrabold">👨‍🏫 Преподавательский штаб</h2>
-                        <p class="text-slate-400 text-sm">Кликните на карточку для просмотра полного профиля</p>
-                    </div>
-                    <button id="addStaffBtn" onclick="openAddStaffModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 font-bold text-xs px-4 py-2.5 rounded-xl transition">➕ Добавить учителя</button>
-                </div>
-                <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-            </section>
-
-            <!-- Модалка Преподавателя -->
-            <div id="addStaffModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
-                    <button onclick="closeAddStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕</button>
-                    <h3 class="text-xl font-bold text-emerald-400">➕ Новый преподаватель</h3>
-                    <input type="text" id="stName" placeholder="ФИО Преподавателя *" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <input type="text" id="stSubject" placeholder="Предмет *" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <input type="text" id="stExperience" placeholder="Стаж (например, 7 лет)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <textarea id="stBio" placeholder="Информация / Биография" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl"></textarea>
-                    <input type="text" id="stContact" placeholder="Контакты (TG / Телефон)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <input type="text" id="stPhoto" placeholder="Ссылка на фото (URL)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <button onclick="saveStaff()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Сохранить</button>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase">Статус аккаунта</label>
+                    <select id="cardStatus" class="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-semibold focus:border-purple-500">
+                        <option value="Активен">Активен</option>
+                        <option value="Заблокирован">Заблокирован</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Просмотр Учителя -->
-            <div id="teacherModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
-                    <button onclick="closeTeacherModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
-                    <img id="modalPhoto" src="" class="w-28 h-28 mx-auto rounded-full object-cover border-2 border-cyan-500 shadow-lg">
-                    <div class="text-center">
-                        <h3 id="modalName" class="text-xl font-black"></h3>
-                        <p id="modalSubject" class="text-xs text-cyan-400 font-bold mt-1"></p>
-                        <p id="modalExp" class="text-xs text-slate-500 mt-1"></p>
-                    </div>
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm space-y-2">
-                        <p class="text-slate-300" id="modalBio"></p>
-                        <p class="text-cyan-300 font-semibold" id="modalContact"></p>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase">Назначенный репетитор</label>
+                    <input type="text" id="cardTeacher" placeholder="ФИО репетитора" class="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase">Ссылка на онлайн-урок (Zoom/Teams)</label>
+                    <input type="text" id="cardLink" placeholder="https://..." class="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm">
                 </div>
             </div>
 
-            <!-- База Пользователей (Админка по шаблону medusa-cheat) -->
-            <section id="page-users" class="page-section max-w-4xl mx-auto space-y-6">
-                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-black text-purple-400">👥 Управление пользователями (/admin/users)</h2>
-                        <p class="text-xs text-slate-400 mt-1">Редактирование ролей, статусов, преподавателей и удаление аккаунтов</p>
-                    </div>
-                    <button onclick="loadAllUsers()" class="text-xs bg-purple-950 text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 font-bold">Обновить</button>
-                </div>
-                <div id="usersListContainer" class="space-y-3"></div>
-            </section>
+            <div class="flex gap-3 pt-2">
+                <button onclick="saveCardData()" class="flex-1 bg-purple-600 hover:bg-purple-500 font-bold py-3 rounded-xl transition text-sm">Сохранить изменения</button>
+                <button onclick="deleteCardUser()" class="bg-red-950/60 hover:bg-red-900 border border-red-500/30 text-red-300 font-bold px-5 py-3 rounded-xl transition text-sm">Удалить</button>
+            </div>
+        </div>
 
-            <!-- Заявки -->
-            <section id="page-requests" class="page-section max-w-4xl mx-auto space-y-6">
-                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-black text-emerald-400">📋 Заявки на обучение</h2>
-                        <p class="text-xs text-slate-400 mt-1">Клик по кнопке моментально меняет статус</p>
-                    </div>
-                    <button onclick="loadRequests()" class="text-xs bg-emerald-950 text-emerald-300 px-4 py-2 rounded-xl border border-emerald-500/30 font-bold">Обновить</button>
-                </div>
-                <div id="requestsList" class="space-y-3"></div>
-            </section>
+        <!-- Таблица всех пользователей -->
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Все пользователи системы</h3>
+            <div id="usersTable" class="space-y-3"></div>
+        </div>
 
-            <!-- Авторизация -->
-            <section id="page-auth" class="page-section max-w-md mx-auto">
-                <div class="bg-slate-900/90 border border-slate-800 p-8 rounded-2xl shadow-2xl">
-                    <div class="flex justify-center space-x-6 mb-6 border-b border-slate-800 pb-4">
-                        <button id="tabLoginBtn" onclick="switchAuth('login')" class="font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1">Вход</button>
-                        <button id="tabRegBtn" onclick="switchAuth('reg')" class="font-bold text-slate-500 pb-1">Регистрация</button>
-                    </div>
-                    <div id="formLogin" class="space-y-4">
-                        <input type="text" id="loginUsername" placeholder="Логин" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <input type="password" id="loginPassword" placeholder="Пароль" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <button onclick="loginUser()" class="w-full bg-cyan-600 hover:bg-cyan-500 font-bold py-3 rounded-xl transition">Войти</button>
-                    </div>
-                    <div id="formReg" class="space-y-4 hidden">
-                        <input type="text" id="regUsername" placeholder="Придумайте логин" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <input type="password" id="regPassword" placeholder="Придумайте пароль" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                        <button onclick="registerUser()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Зарегистрироваться</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Кабинет -->
-            <section id="page-cabinet" class="page-section max-w-4xl mx-auto space-y-6">
-                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-black" id="cabTitle">Личный кабинет</h2>
-                        <p class="text-xs text-cyan-400 font-bold" id="cabRole">Роль: Загрузка...</p>
-                        <p class="text-xs text-slate-500 mt-1" id="cabId">Порядковый ID: --</p>
-                    </div>
-                    <button onclick="logout()" class="text-xs bg-red-900/40 hover:bg-red-800 text-red-200 p-2 px-4 rounded-xl font-bold">Выйти</button>
-                </div>
-
-                <div id="guestView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
-                    <h3 class="text-xl font-bold text-amber-400">⏳ Ожидание подтверждения роли</h3>
-                    <p class="text-slate-400 text-sm">Вы вошли как <b>Гость</b>. Администратор назначит вам роль Ученика для открытия доступа к расписанию.</p>
-                </div>
-
-                <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4">
-                    <h3 class="text-xl font-bold text-center">🎓 Ваш учебный кабинет</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-500 uppercase font-bold">Ваш преподаватель</p>
-                            <p id="studentTeacher" class="text-base font-bold text-cyan-400 mt-1">Не назначен</p>
-                        </div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
-                            <div>
-                                <p class="text-xs text-slate-500 uppercase font-bold">Ссылка на онлайн-урок</p>
-                                <p id="studentLinkText" class="text-xs text-slate-300 truncate mt-1">Ссылка пока отсутствует</p>
-                            </div>
-                            <a id="studentLinkBtn" href="#" target="_blank" class="hidden mt-3 w-full bg-cyan-600 hover:bg-cyan-500 text-xs font-bold py-2 rounded-lg text-center transition">Подключиться к уроку 🚀</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="adminView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
-                    <h3 class="text-xl font-bold text-cyan-400">⚡ Доступ Администратора</h3>
-                    <p class="text-slate-400 text-sm">Вам доступны все панели управления в шапке сайта.</p>
-                </div>
-            </section>
-
-        </main>
     </div>
 
     <script>
-        const API_URL = "https://site-34ib.onrender.com"; // Укажите ваш актуальный URL бэкенда
-        let currentUser = null;
+        const API_URL = "https://site-34ib.onrender.com"; // Ваш Render бэкенд
+        let currentEditId = null;
 
-        function showToast(text, icon="✨") {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastText').innerText = text;
-            document.getElementById('toastIcon').innerText = icon;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        async function loadUsersList() {
+            try {
+                let res = await fetch(`${API_URL}/api/admin/users`);
+                let users = await res.json();
+                let html = "";
+                users.forEach(u => {
+                    html += `
+                    <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-800/80 flex flex-wrap justify-between items-center gap-4 hover:border-purple-500/40 transition">
+                        <div class="flex items-center gap-3">
+                            <span class="badge-id px-2.5 py-1 rounded-lg text-xs font-bold">#${u.user_id}</span>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">${u.username}</h4>
+                                <span class="text-xs text-slate-400">Роль: <b class="text-purple-400">${u.role}</b> | Тариф: ${u.tariff}</span>
+                            </div>
+                        </div>
+                        <button onclick="openUserCard(${u.user_id})" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-4 py-2 rounded-lg transition">Управлять (#${u.user_id})</button>
+                    </div>`;
+                });
+                document.getElementById('usersTable').innerHTML = html || "<p class='text-slate-500 text-sm'>Пользователи не найдены.</p>";
+            } catch (err) {
+                alert("Ошибка загрузки пользователей");
+            }
         }
 
-        function showPage(id) {
-            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(`page-${id}`).classList.add('active');
+        async function openUserCard(id) {
+            let res = await fetch(`${API_URL}/api/admin/user/${id}`);
+            if(!res.ok) return alert("Пользователь не найден!");
+            let u = await res.json();
+            
+            currentEditId = u.user_id;
+            document.getElementById('cardUserBadge').innerText = `ID: #${u.user_id}`;
+            document.getElementById('cardUsername').innerText = u.username;
+            document.getElementById('cardRole').value = u.role;
+            document.getElementById('cardTariff').value = u.tariff;
+            document.getElementById('cardStatus').value = u.status;
+            document.getElementById('cardTeacher').value = u.teacher_name || '';
+            document.getElementById('cardLink').value = u.lesson_link || '';
+
+            document.getElementById('singleUserCard').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function switchAuth(tab) {
-            if (tab === 'login') {
-                document.getElementById('formLogin').classList.remove('hidden');
-                document.getElementById('formReg').classList.add('hidden');
-                document.getElementById('tabLoginBtn').className = "font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1";
-                document.getElementById('tabRegBtn').className = "font-bold text-slate-500 pb-1";
-            } else {
-                document.getElementById('formReg').classList.remove('hidden');
-                document.getElementById('formLogin').classList.add('hidden');
-                document.getElementById('tabRegBtn').className = "font-bold text-emerald-400 border-b-2 border-emerald-400 pb-1";
-                document.getElementById('tabLoginBtn').className = "font-bold text-slate-500 pb-1";
-            }
+        function fetchSingleUser() {
+            let id = document.getElementById('searchUserId').value;
+            if(id) openUserCard(id);
         }
 
-        function selectTariff(t) {
-            document.getElementById('reqTariffInput').value = t;
-            showPage('tariffs');
-            document.getElementById('reqName').focus();
+        function closeCard() {
+            document.getElementById('singleUserCard').classList.add('hidden');
+            currentEditId = null;
         }
 
-        async function registerUser() {
-            const u = document.getElementById('regUsername').value.trim();
-            const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p) return alert("Заполните логин и пароль!");
-            let res = await fetch(`${API_URL}/api/register`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: u, password: p})
-            });
-            let json = await res.json();
-            if(!res.ok) return alert(json.detail);
-            showToast("Вы успешно зарегистрированы!", "🎉");
-            switchAuth('login');
-        }
+        async function saveCardData() {
+            if(!currentEditId) return;
+            let role = document.getElementById('cardRole').value;
+            let tariff = document.getElementById('cardTariff').value;
+            let status = document.getElementById('cardStatus').value;
+            let teacher_name = document.getElementById('cardTeacher').value;
+            let lesson_link = document.getElementById('cardLink').value;
 
-        async function loginUser() {
-            const u = document.getElementById('loginUsername').value.trim();
-            const p = document.getElementById('loginPassword').value.trim();
-            let res = await fetch(`${API_URL}/api/login`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: u, password: p})
-            });
-            let json = await res.json();
-            if(!res.ok) return alert(json.detail);
-
-            currentUser = json;
-            localStorage.setItem('tutor_user', JSON.stringify(json));
-            applyUserSession();
-            showPage('cabinet');
-            showToast(`С возвращением, ${json.username}!`, "👋");
-        }
-
-        function applyUserSession() {
-            if (!currentUser) return;
-            document.getElementById('authNavBtn').innerText = `Кабинет (${currentUser.username})`;
-            document.getElementById('authNavBtn').onclick = () => showPage('cabinet');
-            
-            document.getElementById('cabTitle').innerText = `👋 ${currentUser.username}`;
-            document.getElementById('cabRole').innerText = `Роль: ${currentUser.role}`;
-            document.getElementById('cabId').innerText = `Порядковый ID: #${currentUser.user_id}`;
-
-            if(currentUser.role === 'admin' || currentUser.role === 'teacher') {
-                document.getElementById('navUsersBtn').classList.remove('hidden');
-                document.getElementById('navReqBtn').classList.remove('hidden');
-                document.getElementById('navAdminScheduleBtn').classList.remove('hidden');
-                document.getElementById('addStaffBtn').classList.remove('hidden');
-                document.getElementById('navScheduleBtn').classList.remove('hidden');
-                document.getElementById('adminView').classList.remove('hidden');
-                document.getElementById('studentView').classList.add('hidden');
-                document.getElementById('guestView').classList.add('hidden');
-                loadRequests();
-                loadAllUsers();
-                loadAdminSchedules();
-            } else if(currentUser.role === 'student') {
-                document.getElementById('navUsersBtn').classList.add('hidden');
-                document.getElementById('navReqBtn').classList.add('hidden');
-                document.getElementById('navAdminScheduleBtn').classList.add('hidden');
-                document.getElementById('addStaffBtn').classList.add('hidden');
-                document.getElementById('navScheduleBtn').classList.remove('hidden');
-                document.getElementById('adminView').classList.add('hidden');
-                document.getElementById('studentView').classList.remove('hidden');
-                document.getElementById('guestView').classList.add('hidden');
-
-                document.getElementById('studentTeacher').innerText = currentUser.teacher_name || "Не назначен";
-                let linkBtn = document.getElementById('studentLinkBtn');
-                let linkText = document.getElementById('studentLinkText');
-                if(currentUser.lesson_link) {
-                    linkText.innerText = currentUser.lesson_link;
-                    linkBtn.href = currentUser.lesson_link;
-                    linkBtn.classList.remove('hidden');
-                } else {
-                    linkText.innerText = "Ссылка появится позже";
-                    linkBtn.classList.add('hidden');
-                }
-            } else {
-                document.getElementById('navUsersBtn').classList.add('hidden');
-                document.getElementById('navReqBtn').classList.add('hidden');
-                document.getElementById('navAdminScheduleBtn').classList.add('hidden');
-                document.getElementById('addStaffBtn').classList.add('hidden');
-                document.getElementById('navScheduleBtn').classList.add('hidden');
-                document.getElementById('adminView').classList.add('hidden');
-                document.getElementById('studentView').classList.add('hidden');
-                document.getElementById('guestView').classList.remove('hidden');
-            }
-        }
-
-        // Вывод всех пользователей по ID (Полная панель редактирования)
-        async function loadAllUsers() {
-            let res = await fetch(`${API_URL}/api/admin/users`);
-            let users = await res.json();
-            let html = "";
-            users.forEach(u => {
-                let userTariff = u.tariff || "Не выбран";
-                html += `
-                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3 card-hover">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="text-xs bg-purple-950 text-purple-300 px-2.5 py-0.5 rounded font-bold">ID: #${u.user_id}</span>
-                            <h4 class="font-bold text-base mt-1 inline-block ml-2">${u.username}</h4>
-                        </div>
-                        <span class="text-xs text-slate-400">Текущий статус: <b class="text-purple-300">${u.role}</b></span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <div>
-                            <label class="text-[10px] text-slate-500 uppercase font-bold">Роль</label>
-                            <select id="role-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="guest" ${u.role==='guest'?'selected':''}>Гость (guest)</option>
-                                <option value="student" ${u.role==='student'?'selected':''}>Ученик (student)</option>
-                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель (teacher)</option>
-                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ (admin)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-slate-500 uppercase font-bold">Тариф</label>
-                            <select id="tariff-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="Не выбран" ${userTariff==='Не выбран'?'selected':''}>Не выбран</option>
-                                <option value="Базовый (35 BYN)" ${userTariff.includes('Базовый')?'selected':''}>Базовый (35 BYN)</option>
-                                <option value="Продвинутый (80 BYN)" ${userTariff.includes('Продвинутый')?'selected':''}>Продвинутый (80 BYN)</option>
-                                <option value="VIP (150 BYN)" ${userTariff.includes('VIP')?'selected':''}>VIP (150 BYN)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-slate-500 uppercase font-bold">Активность</label>
-                            <select id="status-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="Активен" ${u.status==='Активен'?'selected':''}>Активен</option>
-                                <option value="Заблокирован" ${u.status==='Заблокирован'?'selected':''}>Заблокирован</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
-                        <div>
-                            <label class="text-[10px] text-slate-500 uppercase font-bold">Преподаватель</label>
-                            <input type="text" id="teacher-${u.user_id}" value="${u.teacher_name || ''}" placeholder="ФИО преподавателя" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-slate-500 uppercase font-bold">Ссылка на урок (Zoom/Teams)</label>
-                            <input type="text" id="link-${u.user_id}" value="${u.lesson_link || ''}" placeholder="https://..." class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
-                        </div>
-                    </div>
-                    <div class="flex gap-2 pt-1">
-                        <button onclick="updateUser(${u.user_id})" class="flex-1 bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500/30 text-xs font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
-                            💾 Сохранить #${u.user_id}
-                        </button>
-                        <button onclick="deleteUser(${u.user_id})" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-500/30 text-xs font-bold px-4 py-2 rounded-lg transition">
-                            🗑️ Удалить
-                        </button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('usersListContainer').innerHTML = html || "<p class='text-slate-500'>Нет зарегистрированных пользователей.</p>";
-        }
-
-        async function updateUser(userId) {
-            let role = document.getElementById(`role-${userId}`).value;
-            let tariff = document.getElementById(`tariff-${userId}`).value;
-            let status = document.getElementById(`status-${userId}`).value;
-            let teacher_name = document.getElementById(`teacher-${userId}`).value;
-            let lesson_link = document.getElementById(`link-${userId}`).value;
-
-            let res = await fetch(`${API_URL}/api/admin/user/${userId}`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
+            let res = await fetch(`${API_URL}/api/admin/user/${currentEditId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({role, tariff, status, teacher_name, lesson_link})
             });
             let json = await res.json();
-            if(!res.ok) return alert("Ошибка при сохранении!");
-            
-            showToast(json.message, "✅");
-            loadAllUsers();
+            alert(json.message);
+            loadUsersList();
         }
 
-        async function deleteUser(userId) {
-            if(!confirm(`Вы уверены, что хотите удалить пользователя #${userId}?`)) return;
-            let res = await fetch(`${API_URL}/api/admin/user/${userId}`, { method: 'DELETE' });
+        async function deleteCardUser() {
+            if(!currentEditId || !confirm(`Удалить пользователя #${currentEditId}?`)) return;
+            let res = await fetch(`${API_URL}/api/admin/user/${currentEditId}`, { method: 'DELETE' });
             let json = await res.json();
-            showToast(json.message, "🗑️");
-            loadAllUsers();
+            alert(json.message);
+            closeCard();
+            loadUsersList();
         }
 
-        // Преподаватели
-        async function loadStaff() {
-            let res = await fetch(`${API_URL}/api/staff`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(s => {
-                html += `<div onclick='openTeacherModal(${JSON.stringify(s)})' class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 text-center cursor-pointer hover:border-cyan-500/60 transition shadow-lg card-hover">
-                    <img src="${s.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300'}" class="w-24 h-24 mx-auto rounded-full object-cover mb-4 border-2 border-cyan-500/30">
-                    <h4 class="font-bold text-lg">${s.name}</h4>
-                    <p class="text-xs text-cyan-400 font-bold mt-1">${s.subject}</p>
-                    <p class="text-xs text-slate-500 mt-2">${s.experience}</p>
-                    <span class="inline-block mt-4 text-xs bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 font-bold">Открыть профиль</span>
-                </div>`;
-            });
-            document.getElementById('staffGrid').innerHTML = html;
-        }
-
-        function openAddStaffModal() { document.getElementById('addStaffModal').classList.remove('hidden'); }
-        function closeAddStaffModal() { document.getElementById('addStaffModal').classList.add('hidden'); }
-
-        async function saveStaff() {
-            let name = document.getElementById('stName').value.trim();
-            let subject = document.getElementById('stSubject').value.trim();
-            let experience = document.getElementById('stExperience').value.trim();
-            let bio = document.getElementById('stBio').value.trim();
-            let contact_info = document.getElementById('stContact').value.trim();
-            let photo_url = document.getElementById('stPhoto').value.trim();
-
-            if(!name || !subject) return alert("Укажите имя и предмет преподавателя!");
-
-            let res = await fetch(`${API_URL}/api/admin/staff`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name, subject, experience, bio, contact_info, photo_url})
-            });
-            let json = await res.json();
-            if(!res.ok) return alert("Ошибка при добавлении преподавателя!");
-
-            showToast("Преподаватель добавлен!", "👨‍🏫");
-            closeAddStaffModal();
-            loadStaff();
-        }
-
-        function openTeacherModal(s) {
-            document.getElementById('modalPhoto').src = s.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';
-            document.getElementById('modalName').innerText = s.name;
-            document.getElementById('modalSubject').innerText = s.subject;
-            document.getElementById('modalExp').innerText = s.experience;
-            document.getElementById('modalBio').innerText = s.bio || "Опытный преподаватель";
-            document.getElementById('modalContact').innerText = s.contact_info || "Telegram: @tutor_hub";
-            document.getElementById('teacherModal').classList.remove('hidden');
-        }
-
-        function closeTeacherModal() { document.getElementById('teacherModal').classList.add('hidden'); }
-
-        // Расписание
-        async function loadSchedules() {
-            let res = await fetch(`${API_URL}/api/schedules`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(i => {
-                html += `<div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 card-hover">
-                    <span class="text-xs bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full font-bold border border-cyan-500/30">${i.day} • ${i.time}</span>
-                    <h4 class="font-bold text-lg mt-3">${i.subject}</h4>
-                    <p class="text-sm text-slate-400 mt-1">Преподаватель: ${i.teacher}</p>
-                </div>`;
-            });
-            document.getElementById('scheduleGrid').innerHTML = html || "<p class='text-slate-500'>Расписание пока пусто.</p>";
-        }
-
-        async function loadAdminSchedules() {
-            let res = await fetch(`${API_URL}/api/schedules`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(i => {
-                html += `<div class="p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <span class="text-xs text-cyan-400 font-bold">${i.day} в ${i.time}</span>
-                        <h4 class="font-bold text-base mt-0.5">${i.subject}</h4>
-                        <p class="text-xs text-slate-400">Преподаватель: ${i.teacher}</p>
-                    </div>
-                    <button onclick="deleteSchedule(${i.id})" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition">Удалить</button>
-                </div>`;
-            });
-            document.getElementById('adminScheduleList').innerHTML = html || "<p class='text-slate-500'>Нет добавленных предметов.</p>";
-        }
-
-        async function addSchedule() {
-            let day = document.getElementById('schDay').value;
-            let time = document.getElementById('schTime').value;
-            let subject = document.getElementById('schSubject').value;
-            let teacher = document.getElementById('schTeacher').value;
-            if(!day || !subject) return alert("Укажите день и предмет!");
-
-            await fetch(`${API_URL}/api/admin/schedule`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({day, time, subject, teacher})
-            });
-            showToast("Урок сохранен!", "🗓️");
-            loadSchedules();
-            loadAdminSchedules();
-        }
-
-        async function deleteSchedule(schId) {
-            let res = await fetch(`${API_URL}/api/admin/schedule/${schId}`, { method: 'DELETE' });
-            let json = await res.json();
-            showToast(json.message, "🗑️");
-            loadSchedules();
-            loadAdminSchedules();
-        }
-
-        // Заявки
-        async function loadRequests() {
-            let res = await fetch(`${API_URL}/api/requests`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(r => {
-                let badgeColor = r.status === 'Рассмотрено' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/30' : (r.status === 'Отклонено' ? 'bg-red-950 text-red-300 border-red-500/30' : 'bg-amber-950 text-amber-300 border-amber-500/30');
-                
-                html += `<div id="req-card-${r.id}" class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3 transition">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h4 class="font-bold text-base">${r.student_name}</h4>
-                            <p class="text-xs text-cyan-400">Контакт: ${r.contact} | Тариф: ${r.tariff}</p>
-                        </div>
-                        <span id="req-badge-${r.id}" class="text-xs px-2.5 py-1 rounded-full font-bold border ${badgeColor}">${r.status}</span>
-                    </div>
-                    <div class="flex gap-2 pt-2 border-t border-slate-900">
-                        <button onclick="updateRequestStatus(${r.id}, 'На рассмотрении')" class="text-[11px] bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg text-amber-400 font-semibold transition">⏳ На рассмотрении</button>
-                        <button onclick="updateRequestStatus(${r.id}, 'Рассмотрено')" class="text-[11px] bg-emerald-950/60 hover:bg-emerald-900/60 px-3 py-1.5 rounded-lg text-emerald-300 font-semibold transition">✅ Рассмотрено</button>
-                        <button onclick="updateRequestStatus(${r.id}, 'Отклонено')" class="text-[11px] bg-red-950/60 hover:bg-red-900/60 px-3 py-1.5 rounded-lg text-red-300 font-semibold transition">❌ Отклонено</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('requestsList').innerHTML = html || "<p class='text-slate-500'>Нет заявок.</p>";
-        }
-
-        async function updateRequestStatus(reqId, newStatus) {
-            let res = await fetch(`${API_URL}/api/admin/request/${reqId}`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status: newStatus})
-            });
-            let json = await res.json();
-            
-            let badge = document.getElementById(`req-badge-${reqId}`);
-            if(badge) {
-                badge.innerText = newStatus;
-                badge.className = `text-xs px-2.5 py-1 rounded-full font-bold border ${newStatus === 'Рассмотрено' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/30' : (newStatus === 'Отклонено' ? 'bg-red-950 text-red-300 border-red-500/30' : 'bg-amber-950 text-amber-300 border-amber-500/30')}`;
-            }
-            showToast(`Статус заявки #${reqId}: ${newStatus}`, "📋");
-        }
-
-        async function sendRequest() {
-            let student_name = document.getElementById('reqName').value;
-            let contact = document.getElementById('reqContact').value;
-            let tariff = document.getElementById('reqTariffInput').value;
-            if(!student_name || !contact) return alert("Укажите имя и контакт для связи!");
-            let res = await fetch(`${API_URL}/api/request`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({student_name, contact, tariff: tariff || "Базовый"})
-            });
-            let json = await res.json();
-            showToast(json.message, "✅");
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('tutor_user');
-            document.getElementById('navUsersBtn').classList.add('hidden');
-            document.getElementById('navReqBtn').classList.add('hidden');
-            document.getElementById('navAdminScheduleBtn').classList.add('hidden');
-            document.getElementById('addStaffBtn').classList.add('hidden');
-            document.getElementById('navScheduleBtn').classList.add('hidden');
-            document.getElementById('authNavBtn').innerText = "Войти";
-            document.getElementById('authNavBtn').onclick = () => showPage('auth');
-            showPage('home');
-            showToast("Вы вышли из аккаунта", "🔒");
-        }
-
-        window.onload = () => { 
-            loadSchedules(); 
-            loadStaff(); 
-            initCanvas(); 
-            
-            let savedUser = localStorage.getItem('tutor_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                applyUserSession();
-            }
-        };
-
-        function initCanvas() {
-            const canvas = document.getElementById('canvas-web');
-            const ctx = canvas.getContext('2d');
-            let w = canvas.width = window.innerWidth;
-            let h = canvas.height = window.innerHeight;
-            window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
-
-            const mouse = { x: null, y: null, radius: 140 };
-            window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
-            window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
-
-            const particles = [];
-            for(let i=0; i<Math.floor((w*h)/15000); i++) {
-                particles.push({
-                    x: Math.random()*w, y: Math.random()*h,
-                    vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2,
-                    r: Math.random()*1.5 + 1
-                });
-            }
-
-            function animate() {
-                ctx.clearRect(0,0,w,h);
-                particles.forEach(p => {
-                    p.x += p.vx; p.y += p.vy;
-                    if(p.x<0||p.x>w) p.vx*=-1; if(p.y<0||p.y>h) p.vy*=-1;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-                    ctx.fillStyle = 'rgba(6, 182, 212, 0.35)'; ctx.fill();
-
-                    if(mouse.x !== null && mouse.y !== null) {
-                        let dx = mouse.x - p.x, dy = mouse.y - p.y, dist = Math.sqrt(dx*dx + dy*dy);
-                        if(dist < mouse.radius) {
-                            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y);
-                            ctx.strokeStyle = `rgba(6, 182, 212, ${0.6 - dist/mouse.radius})`;
-                            ctx.lineWidth = 0.6; ctx.stroke();
-                        }
-                    }
-                });
-                requestAnimationFrame(animate);
-            }
-            animate();
-        }
+        window.onload = loadUsersList;
     </script>
 </body>
 </html>
