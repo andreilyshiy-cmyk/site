@@ -27,10 +27,10 @@
                 <nav class="flex items-center space-x-1 md:space-x-3 text-sm font-semibold">
                     <button onclick="showPage('home')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Главная</button>
                     <button onclick="showPage('tariffs')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Тарифы</button>
-                    <button onclick="showPage('schedule')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Расписание</button>
+                    <!-- Расписание видно только авторизованным ученикам/учителям/админам -->
+                    <button id="navScheduleBtn" onclick="showPage('schedule')" class="hidden px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Расписание</button>
                     <button onclick="showPage('staff')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Штаб</button>
                     
-                    <!-- Отдельные вкладки для Администраторов/Учителей (скрыты по умолчанию) -->
                     <button id="navUsersBtn" onclick="showPage('users')" class="hidden px-3 py-2 rounded-xl bg-purple-950/60 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 transition">👥 Пользователи</button>
                     <button id="navReqBtn" onclick="showPage('requests')" class="hidden px-3 py-2 rounded-xl bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60 transition">📋 Заявки</button>
 
@@ -54,7 +54,7 @@
                 </p>
                 <div class="flex justify-center gap-4">
                     <button onclick="showPage('tariffs')" class="bg-cyan-600 hover:bg-cyan-500 font-bold px-8 py-4 rounded-2xl shadow-xl shadow-cyan-600/20 transition">Выбрать тариф</button>
-                    <button onclick="showPage('schedule')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 font-bold px-8 py-4 rounded-2xl transition">Расписание</button>
+                    <button onclick="showPage('staff')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 font-bold px-8 py-4 rounded-2xl transition">Наш штаб</button>
                 </div>
             </section>
 
@@ -117,7 +117,7 @@
                 </div>
             </section>
 
-            <!-- Расписание -->
+            <!-- Расписание (Только для авторизованных учеников/учителей/админов) -->
             <section id="page-schedule" class="page-section space-y-6">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold mb-2">📅 Расписание занятий</h2>
@@ -152,24 +152,24 @@
                 </div>
             </div>
 
-            <!-- ОТДЕЛЬНАЯ ВКЛАДКА: Управление пользователями (Только для админов) -->
+            <!-- Пользователи (Админка) -->
             <section id="page-users" class="page-section max-w-4xl mx-auto space-y-6">
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-purple-400">👥 База пользователей</h2>
-                        <p class="text-xs text-slate-400 mt-1">Просмотр и редактирование ролей и тарифов по ID</p>
+                        <p class="text-xs text-slate-400 mt-1">Числовые ID, смена ролей и тарифов из выпадающего списка</p>
                     </div>
                     <button onclick="loadAllUsers()" class="text-xs bg-purple-950 text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 font-bold">Обновить</button>
                 </div>
                 <div id="usersListContainer" class="space-y-3"></div>
             </section>
 
-            <!-- ОТДЕЛЬНАЯ ВКЛАДКА: Заявки на обучение (Только для админов) -->
+            <!-- Заявки (Админка со сменой статусов) -->
             <section id="page-requests" class="page-section max-w-4xl mx-auto space-y-6">
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-emerald-400">📋 Заявки на обучение</h2>
-                        <p class="text-xs text-slate-400 mt-1">Список всех поступивших заявок от учеников</p>
+                        <p class="text-xs text-slate-400 mt-1">Управление статусами заявок (На рассмотрении / Рассмотрено / Отклонено)</p>
                     </div>
                     <button onclick="loadRequests()" class="text-xs bg-emerald-950 text-emerald-300 px-4 py-2 rounded-xl border border-emerald-500/30 font-bold">Обновить</button>
                 </div>
@@ -207,9 +207,14 @@
                     <button onclick="logout()" class="text-xs bg-red-900/40 hover:bg-red-800 text-red-200 p-2 px-4 rounded-xl font-bold">Выйти</button>
                 </div>
 
+                <div id="guestView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
+                    <h3 class="text-xl font-bold text-amber-400">⏳ Ожидание подтверждения роли</h3>
+                    <p class="text-slate-400 text-sm">Ваш аккаунт зарегистрирован со статусом <b>Гость</b>. Администратор скоро назначит вам роль ученика, после чего вам откроется расписание и материалы.</p>
+                </div>
+
                 <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
                     <h3 class="text-xl font-bold">Добро пожаловать в учебный кабинет!</h3>
-                    <p class="text-slate-400 text-sm">Здесь отображается ваш статус обучения.</p>
+                    <p class="text-slate-400 text-sm">Вам доступно расписание занятий в верхнем меню.</p>
                 </div>
 
                 <!-- Панель администратора для добавления расписания -->
@@ -270,7 +275,7 @@
             });
             let json = await res.json();
             if(!res.ok) return alert(json.detail);
-            alert("Регистрация успешна! Первый аккаунт получает права админа.");
+            alert("Регистрация успешна! Вы зарегистрированы как гость.");
             switchAuth('login');
         }
 
@@ -285,28 +290,46 @@
             if(!res.ok) return alert(json.detail);
 
             currentUser = json;
-            document.getElementById('authNavBtn').innerText = `Кабинет (${json.username})`;
+            localStorage.setItem('tutor_user', JSON.stringify(json)); // Сохранение сессии
+            applyUserSession();
+            showPage('cabinet');
+        }
+
+        function applyUserSession() {
+            if (!currentUser) return;
+            document.getElementById('authNavBtn').innerText = `Кабинет (${currentUser.username})`;
             document.getElementById('authNavBtn').onclick = () => showPage('cabinet');
             
-            document.getElementById('cabTitle').innerText = `👋 ${json.username}`;
-            document.getElementById('cabRole').innerText = `Роль: ${json.role}`;
-            document.getElementById('cabId').innerText = `ID: #${json.user_id}`;
+            document.getElementById('cabTitle').innerText = `👋 ${currentUser.username}`;
+            document.getElementById('cabRole').innerText = `Роль: ${currentUser.role}`;
+            document.getElementById('cabId').innerText = `Числовой ID: #${currentUser.user_id}`;
 
-            if(json.role === 'admin' || json.role === 'teacher') {
-                // Показываем отдельные вкладки в шапке
+            // Управление видимостью вкладок для гостей, учеников и админов
+            if(currentUser.role === 'admin' || currentUser.role === 'teacher') {
                 document.getElementById('navUsersBtn').classList.remove('hidden');
                 document.getElementById('navReqBtn').classList.remove('hidden');
+                document.getElementById('navScheduleBtn').classList.remove('hidden');
                 document.getElementById('adminView').classList.remove('hidden');
                 document.getElementById('studentView').classList.add('hidden');
+                document.getElementById('guestView').classList.add('hidden');
                 loadRequests();
                 loadAllUsers();
-            } else {
+            } else if(currentUser.role === 'student') {
                 document.getElementById('navUsersBtn').classList.add('hidden');
                 document.getElementById('navReqBtn').classList.add('hidden');
+                document.getElementById('navScheduleBtn').classList.remove('hidden');
                 document.getElementById('adminView').classList.add('hidden');
                 document.getElementById('studentView').classList.remove('hidden');
+                document.getElementById('guestView').classList.add('hidden');
+            } else {
+                // Гость (guest)
+                document.getElementById('navUsersBtn').classList.add('hidden');
+                document.getElementById('navReqBtn').classList.add('hidden');
+                document.getElementById('navScheduleBtn').classList.add('hidden'); // Расписание скрыто для гостей
+                document.getElementById('adminView').classList.add('hidden');
+                document.getElementById('studentView').classList.add('hidden');
+                document.getElementById('guestView').classList.remove('hidden');
             }
-            showPage('cabinet');
         }
 
         async function loadAllUsers() {
@@ -327,14 +350,20 @@
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold">Роль</label>
                             <select id="role-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="student" ${u.role==='student'?'selected':''}>Ученик</option>
-                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель</option>
-                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ</option>
+                                <option value="guest" ${u.role==='guest'?'selected':''}>Гость (guest)</option>
+                                <option value="student" ${u.role==='student'?'selected':''}>Ученик (student)</option>
+                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель (teacher)</option>
+                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ (admin)</option>
                             </select>
                         </div>
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold">Тариф</label>
-                            <input type="text" id="tariff-${u.user_id}" value="${u.tariff}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
+                            <select id="tariff-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
+                                <option value="Не выбран" ${u.tariff==='Не выбран'?'selected':''}>Не выбран</option>
+                                <option value="Базовый (35 BYN)" ${u.tariff.includes('Базовый')?'selected':''}>Базовый (35 BYN)</option>
+                                <option value="Продвинутый (80 BYN)" ${u.tariff.includes('Продвинутый')?'selected':''}>Продвинутый (80 BYN)</option>
+                                <option value="VIP (150 BYN)" ${u.tariff.includes('VIP')?'selected':''}>VIP (150 BYN)</option>
+                            </select>
                         </div>
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold">Активность</label>
@@ -428,16 +457,34 @@
             let items = await res.json();
             let html = "";
             items.forEach(r => {
-                html += `<div class="p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-base">${r.student_name}</h4>
-                        <p class="text-xs text-cyan-400">Контакт: ${r.contact}</p>
-                        <p class="text-xs text-slate-400">Тариф: ${r.tariff}</p>
+                let badgeColor = r.status === 'Рассмотрено' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/30' : (r.status === 'Отклонено' ? 'bg-red-950 text-red-300 border-red-500/30' : 'bg-amber-950 text-amber-300 border-amber-500/30');
+                
+                html += `<div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-base">${r.student_name}</h4>
+                            <p class="text-xs text-cyan-400">Контакт: ${r.contact} | Тариф: ${r.tariff}</p>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 rounded-full font-bold border ${badgeColor}">${r.status}</span>
                     </div>
-                    <span class="text-xs bg-emerald-950 text-emerald-300 px-2.5 py-1 rounded-full font-bold border border-emerald-500/30">${r.status}</span>
+                    <!-- Кнопки управления статусом заявки для админа -->
+                    <div class="flex gap-2 pt-2 border-t border-slate-900">
+                        <button onclick="updateRequestStatus(${r.id}, 'На рассмотрении')" class="text-[11px] bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg text-amber-400 font-semibold">⏳ На рассмотрении</button>
+                        <button onclick="updateRequestStatus(${r.id}, 'Рассмотрено')" class="text-[11px] bg-emerald-950/60 hover:bg-emerald-900/60 px-3 py-1.5 rounded-lg text-emerald-300 font-semibold">✅ Рассмотрено</button>
+                        <button onclick="updateRequestStatus(${r.id}, 'Отклонено')" class="text-[11px] bg-red-950/60 hover:bg-red-900/60 px-3 py-1.5 rounded-lg text-red-300 font-semibold">❌ Отклонено</button>
+                    </div>
                 </div>`;
             });
             document.getElementById('requestsList').innerHTML = html || "<p class='text-slate-500'>Нет заявок.</p>";
+        }
+
+        async function updateRequestStatus(reqId, newStatus) {
+            let res = await fetch(`${API_URL}/api/admin/request/${reqId}`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status: newStatus})
+            });
+            let json = await res.json();
+            loadRequests();
         }
 
         async function loadSchedules() {
@@ -456,14 +503,27 @@
 
         function logout() {
             currentUser = null;
+            localStorage.removeItem('tutor_user');
             document.getElementById('navUsersBtn').classList.add('hidden');
             document.getElementById('navReqBtn').classList.add('hidden');
+            document.getElementById('navScheduleBtn').classList.add('hidden');
             document.getElementById('authNavBtn').innerText = "Войти";
             document.getElementById('authNavBtn').onclick = () => showPage('auth');
             showPage('home');
         }
 
-        window.onload = () => { loadSchedules(); loadStaff(); initCanvas(); };
+        window.onload = () => { 
+            loadSchedules(); 
+            loadStaff(); 
+            initCanvas(); 
+            
+            // Восстановление сессии при перезагрузке сайта
+            let savedUser = localStorage.getItem('tutor_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                applyUserSession();
+            }
+        };
 
         function initCanvas() {
             const canvas = document.getElementById('canvas-web');
