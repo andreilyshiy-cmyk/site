@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, Text, create_engine
+from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import bcrypt
@@ -16,7 +16,7 @@ class UserDB(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, unique=True, index=True)
     password_hash = Column(String)
-    role = Column(String, default="guest") # По умолчанию гость
+    role = Column(String, default="guest") # Все всегда регистрации заходят как GUEST
     tariff = Column(String, default="Не выбран")
     status = Column(String, default="Активен")
 
@@ -26,7 +26,7 @@ class RequestDB(Base):
     student_name = Column(String)
     contact = Column(String)
     tariff = Column(String)
-    status = Column(String, default="На рассмотрении") # Статусы заявок
+    status = Column(String, default="На рассмотрении")
 
 class ScheduleDB(Base):
     __tablename__ = "schedules"
@@ -106,16 +106,22 @@ class ScheduleCreate(BaseModel):
     subject: str
     teacher: str
 
+class StaffCreate(BaseModel):
+    name: str
+    subject: str
+    experience: str
+    bio: str
+    contact_info: str
+    photo_url: str
+
 @app.post("/api/register")
 def register(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(UserDB).filter(UserDB.username == user.username).first():
         raise HTTPException(status_code=400, detail="Логин уже занят!")
     hashed = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
-    # Первый пользователь становится администратором, остальные — гостями (role="guest")
-    role = "admin" if db.query(UserDB).count() == 0 else "guest"
-    
-    new_user = UserDB(username=user.username, password_hash=hashed, role=role)
+    # Абсолютно все получают роль GUEST по дефолту
+    new_user = UserDB(username=user.username, password_hash=hashed, role="guest")
     db.add(new_user)
     db.commit()
     return {"status": "success", "message": "Регистрация успешна!"}
@@ -152,6 +158,12 @@ def update_user_by_admin(user_id: int, data: UserUpdateAdmin, db: Session = Depe
 def get_staff(db: Session = Depends(get_db)):
     return db.query(StaffDB).all()
 
+@app.post("/api/admin/staff")
+def add_staff(item: StaffCreate, db: Session = Depends(get_db)):
+    db.add(StaffDB(**item.dict()))
+    db.commit()
+    return {"status": "success", "message": "Преподаватель добавлен в штаб!"}
+
 @app.get("/api/schedules")
 def get_schedules(db: Session = Depends(get_db)):
     return db.query(ScheduleDB).all()
@@ -160,7 +172,15 @@ def get_schedules(db: Session = Depends(get_db)):
 def add_schedule(item: ScheduleCreate, db: Session = Depends(get_db)):
     db.add(ScheduleDB(**item.dict()))
     db.commit()
-    return {"status": "success"}
+    return {"status": "success", "message": "Занятие добавлено!"}
+
+@app.delete("/api/admin/schedule/{sch_id}")
+def delete_schedule(sch_id: int, db: Session = Depends(get_db)):
+    sch = db.query(ScheduleDB).filter(ScheduleDB.id == sch_id).first()
+    if not sch: raise HTTPException(status_code=404, detail="Занятие не найдено")
+    db.delete(sch)
+    db.commit()
+    return {"status": "success", "message": "Занятие удалено!"}
 
 @app.post("/api/request")
 def create_request(req: RequestCreate, db: Session = Depends(get_db)):
@@ -178,4 +198,4 @@ def update_request_status(req_id: int, data: RequestUpdateStatus, db: Session = 
     if not req: raise HTTPException(status_code=404, detail="Заявка не найдена")
     req.status = data.status
     db.commit()
-    return {"status": "success", "message": "Статус заявки обновлен!"}
+    return {"status": "success", "message": "Статус обновлен!", "new_status": req.status}
