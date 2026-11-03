@@ -11,8 +11,7 @@
         .page-section { display: none; opacity: 0; transform: translateY(8px); transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
         .page-section.active { display: block; opacity: 1; transform: translateY(0); }
         .card-hover { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
-        .card-hover:hover { transform: translateY(-4px); }
-        /* Toast notification animation */
+        .card-hover:hover { transform: translateY(-3px); }
         #toast { transition: all 0.3s ease; }
     </style>
 </head>
@@ -20,7 +19,6 @@
 
     <canvas id="canvas-web"></canvas>
 
-    <!-- Всплывающие уведомления (Toast) -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 bg-slate-900 border border-cyan-500/40 text-cyan-300 font-bold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
         <span id="toastIcon">✨</span>
         <span id="toastText">Уведомление</span>
@@ -39,7 +37,6 @@
                     <button id="navScheduleBtn" onclick="showPage('schedule')" class="hidden px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Расписание</button>
                     <button onclick="showPage('staff')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Штаб</button>
                     
-                    <!-- Отдельные вкладки Администратора -->
                     <button id="navUsersBtn" onclick="showPage('users')" class="hidden px-3 py-2 rounded-xl bg-purple-950/60 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 transition">👥 Пользователи</button>
                     <button id="navReqBtn" onclick="showPage('requests')" class="hidden px-3 py-2 rounded-xl bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60 transition">📋 Заявки</button>
                     <button id="navAdminScheduleBtn" onclick="showPage('admin-schedule')" class="hidden px-3 py-2 rounded-xl bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-900/60 transition">🗓️ Упр. Расписанием</button>
@@ -130,17 +127,17 @@
             <section id="page-schedule" class="page-section space-y-6">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold mb-2">📅 Расписание занятий</h2>
-                    <p class="text-slate-400">Доступно только подтвержденным ученикам</p>
+                    <p class="text-slate-400">График предстоящих уроков</p>
                 </div>
                 <div id="scheduleGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
-            <!-- ВКЛАДКА: Управление Расписанием (Админ) -->
+            <!-- Управление Расписанием (Админ) -->
             <section id="page-admin-schedule" class="page-section max-w-4xl mx-auto space-y-6">
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-cyan-400">🗓️ Управление расписанием</h2>
-                        <p class="text-xs text-slate-400 mt-1">Добавляйте и удаляйте занятия в режиме реального времени</p>
+                        <p class="text-xs text-slate-400 mt-1">Добавление и мгновенное удаление уроков</p>
                     </div>
                 </div>
 
@@ -156,7 +153,7 @@
                 </div>
 
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-4">
-                    <h3 class="text-lg font-bold">🗑️ Текущие предметы (Нажмите, чтобы удалить)</h3>
+                    <h3 class="text-lg font-bold">🗑️ Текущие предметы</h3>
                     <div id="adminScheduleList" class="space-y-3"></div>
                 </div>
             </section>
@@ -166,7 +163,7 @@
                 <div class="text-center flex justify-between items-center flex-wrap gap-4">
                     <div>
                         <h2 class="text-3xl font-extrabold">👨‍🏫 Преподавательский штаб</h2>
-                        <p class="text-slate-400 text-sm">Нажмите на карточку для просмотра полного профиля</p>
+                        <p class="text-slate-400 text-sm">Кликните на карточку для просмотра полного профиля</p>
                     </div>
                     <button id="addStaffBtn" onclick="openAddStaffModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 font-bold text-xs px-4 py-2.5 rounded-xl transition">➕ Добавить учителя</button>
                 </div>
@@ -175,16 +172,16 @@
 
             <!-- Модальное окно создания Преподавателя (Админ) -->
             <div id="addStaffModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
                     <button onclick="closeAddStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕</button>
-                    <h3 class="text-xl font-bold text-emerald-400">➕ Пополнение штаба</h3>
-                    <input type="text" id="stName" placeholder="ФИО Преподавателя" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <input type="text" id="stSubject" placeholder="Предмет" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                    <h3 class="text-xl font-bold text-emerald-400">➕ Новый преподаватель</h3>
+                    <input type="text" id="stName" placeholder="ФИО Преподавателя *" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                    <input type="text" id="stSubject" placeholder="Предмет *" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
                     <input type="text" id="stExperience" placeholder="Стаж (например, 7 лет)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
                     <textarea id="stBio" placeholder="Информация / Биография" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl"></textarea>
                     <input type="text" id="stContact" placeholder="Контакты (TG / Телефон)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
                     <input type="text" id="stPhoto" placeholder="Ссылка на фото (URL)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                    <button onclick="saveStaff()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl">Сохранить преподавателя</button>
+                    <button onclick="saveStaff()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Сохранить</button>
                 </div>
             </div>
 
@@ -210,7 +207,7 @@
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-purple-400">👥 База пользователей</h2>
-                        <p class="text-xs text-slate-400 mt-1">Все новые аккаунты регистрируются с ролью Гостя (guest)</p>
+                        <p class="text-xs text-slate-400 mt-1">Редактирование ролей и мгновенное сохранение</p>
                     </div>
                     <button onclick="loadAllUsers()" class="text-xs bg-purple-950 text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 font-bold">Обновить</button>
                 </div>
@@ -222,7 +219,7 @@
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-emerald-400">📋 Заявки на обучение</h2>
-                        <p class="text-xs text-slate-400 mt-1">Нажимайте на статусы — они меняются мгновенно без перезагрузки!</p>
+                        <p class="text-xs text-slate-400 mt-1">Клик по кнопке моментально обновляет статус</p>
                     </div>
                     <button onclick="loadRequests()" class="text-xs bg-emerald-950 text-emerald-300 px-4 py-2 rounded-xl border border-emerald-500/30 font-bold">Обновить</button>
                 </div>
@@ -261,18 +258,18 @@
                 </div>
 
                 <div id="guestView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
-                    <h3 class="text-xl font-bold text-amber-400">⏳ Ожидание выдачи прав</h3>
-                    <p class="text-slate-400 text-sm">Вы вошли как <b>Гость</b>. Администратор назначит вам роль ученика, после чего откроется расписание.</p>
+                    <h3 class="text-xl font-bold text-amber-400">⏳ Ожидание роли Ученика</h3>
+                    <p class="text-slate-400 text-sm">Вы вошли как <b>Гость</b>. Администратор должен подтвердить ваш аккаунт, чтобы вам открылось расписание.</p>
                 </div>
 
                 <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
                     <h3 class="text-xl font-bold">🎓 Кабинет Ученика</h3>
-                    <p class="text-slate-400 text-sm">Расписание уроков доступно в шапке сайта.</p>
+                    <p class="text-slate-400 text-sm">Вам доступна вкладка «Расписание» в верхнем меню.</p>
                 </div>
 
                 <div id="adminView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
-                    <h3 class="text-xl font-bold text-cyan-400">⚡ Вы вошли как Учитель / Администратор</h3>
-                    <p class="text-slate-400 text-sm">Используйте вкладки в шапке сайта для управления расписанием, пользователями и заявками.</p>
+                    <h3 class="text-xl font-bold text-cyan-400">⚡ Доступ Администратора</h3>
+                    <p class="text-slate-400 text-sm">Вам доступны вкладки «Пользователи», «Заявки» и «Упр. Расписанием».</p>
                 </div>
             </section>
 
@@ -280,7 +277,7 @@
     </div>
 
     <script>
-        const API_URL = "https://site-34ib.onrender.com"; // Укажите ваш бэкенд на Render
+        const API_URL = "https://site-34ib.onrender.com"; // Актуальный URL Render
         let currentUser = null;
 
         function showToast(text, icon="✨") {
@@ -320,14 +317,14 @@
         async function registerUser() {
             const u = document.getElementById('regUsername').value.trim();
             const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p) return alert("Заполните поля!");
+            if(!u || !p) return alert("Заполните логин и пароль!");
             let res = await fetch(`${API_URL}/api/register`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username: u, password: p})
             });
             let json = await res.json();
             if(!res.ok) return alert(json.detail);
-            showToast("Регистрация успешна! Роль: Гость", "🎉");
+            showToast("Вы зарегистрированы со статусом Гость!", "🎉");
             switchAuth('login');
         }
 
@@ -355,7 +352,7 @@
             
             document.getElementById('cabTitle').innerText = `👋 ${currentUser.username}`;
             document.getElementById('cabRole').innerText = `Роль: ${currentUser.role}`;
-            document.getElementById('cabId').innerText = `Порядковый ID: #${currentUser.user_id}`;
+            document.getElementById('cabId').innerText = `ID: #${currentUser.user_id}`;
 
             if(currentUser.role === 'admin' || currentUser.role === 'teacher') {
                 document.getElementById('navUsersBtn').classList.remove('hidden');
@@ -379,7 +376,6 @@
                 document.getElementById('studentView').classList.remove('hidden');
                 document.getElementById('guestView').classList.add('hidden');
             } else {
-                // Гость
                 document.getElementById('navUsersBtn').classList.add('hidden');
                 document.getElementById('navReqBtn').classList.add('hidden');
                 document.getElementById('navAdminScheduleBtn').classList.add('hidden');
@@ -400,10 +396,10 @@
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3 card-hover">
                     <div class="flex justify-between items-center">
                         <div>
-                            <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded font-bold">ID: #${u.user_id}</span>
-                            <h4 class="font-bold text-base mt-1">${u.username}</h4>
+                            <span class="text-xs bg-purple-950 text-purple-300 px-2.5 py-0.5 rounded font-bold">ID: #${u.user_id}</span>
+                            <h4 class="font-bold text-base mt-1 inline-block ml-2">${u.username}</h4>
                         </div>
-                        <span class="text-xs text-slate-400">Статус: <b>${u.status}</b></span>
+                        <span class="text-xs text-slate-400">Текущий статус: <b class="text-purple-300">${u.role}</b></span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
@@ -432,10 +428,12 @@
                             </select>
                         </div>
                     </div>
-                    <button onclick="updateUser(${u.user_id})" class="w-full bg-purple-700 hover:bg-purple-600 text-xs font-bold py-2 rounded-lg transition">Сохранить профиль #${u.user_id}</button>
+                    <button onclick="updateUser(${u.user_id})" class="w-full bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500/30 text-xs font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
+                        💾 Сохранить #${u.user_id}
+                    </button>
                 </div>`;
             });
-            document.getElementById('usersListContainer').innerHTML = html || "<p class='text-slate-500'>Нет пользователей.</p>";
+            document.getElementById('usersListContainer').innerHTML = html || "<p class='text-slate-500'>Нет зарегистрированных пользователей.</p>";
         }
 
         async function updateUser(userId) {
@@ -448,7 +446,9 @@
                 body: JSON.stringify({role, tariff, status})
             });
             let json = await res.json();
-            showToast(json.message || "Пользователь обновлен!", "✅");
+            if(!res.ok) return alert("Ошибка при сохранении!");
+            
+            showToast(json.message, "✅");
             loadAllUsers();
         }
 
@@ -473,21 +473,23 @@
         function closeAddStaffModal() { document.getElementById('addStaffModal').classList.add('hidden'); }
 
         async function saveStaff() {
-            let name = document.getElementById('stName').value;
-            let subject = document.getElementById('stSubject').value;
-            let experience = document.getElementById('stExperience').value;
-            let bio = document.getElementById('stBio').value;
-            let contact_info = document.getElementById('stContact').value;
-            let photo_url = document.getElementById('stPhoto').value;
+            let name = document.getElementById('stName').value.trim();
+            let subject = document.getElementById('stSubject').value.trim();
+            let experience = document.getElementById('stExperience').value.trim();
+            let bio = document.getElementById('stBio').value.trim();
+            let contact_info = document.getElementById('stContact').value.trim();
+            let photo_url = document.getElementById('stPhoto').value.trim();
 
-            if(!name || !subject) return alert("Заполните имя и предмет");
+            if(!name || !subject) return alert("Укажите имя и предмет преподавателя!");
 
             let res = await fetch(`${API_URL}/api/admin/staff`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({name, subject, experience, bio, contact_info, photo_url})
             });
             let json = await res.json();
-            showToast(json.message, "👨‍🏫");
+            if(!res.ok) return alert("Ошибка при сохранении преподавателя!");
+
+            showToast("Преподаватель добавлен!", "👨‍🏫");
             closeAddStaffModal();
             loadStaff();
         }
@@ -498,13 +500,13 @@
             document.getElementById('modalSubject').innerText = s.subject;
             document.getElementById('modalExp').innerText = s.experience;
             document.getElementById('modalBio').innerText = s.bio || "Опытный преподаватель";
-            document.getElementById('modalContact').innerText = s.contact_info || "TG: @tutor_hub";
+            document.getElementById('modalContact').innerText = s.contact_info || "Telegram: @tutor_hub";
             document.getElementById('teacherModal').classList.remove('hidden');
         }
 
         function closeTeacherModal() { document.getElementById('teacherModal').classList.add('hidden'); }
 
-        // Управление Расписанием
+        // Расписание
         async function loadSchedules() {
             let res = await fetch(`${API_URL}/api/schedules`);
             let items = await res.json();
@@ -541,13 +543,13 @@
             let time = document.getElementById('schTime').value;
             let subject = document.getElementById('schSubject').value;
             let teacher = document.getElementById('schTeacher').value;
-            if(!day || !subject) return alert("Заполните день и предмет!");
+            if(!day || !subject) return alert("Укажите день и предмет!");
 
             await fetch(`${API_URL}/api/admin/schedule`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({day, time, subject, teacher})
             });
-            showToast("Урок добавлен!", "🗓️");
+            showToast("Урок сохранен!", "🗓️");
             loadSchedules();
             loadAdminSchedules();
         }
@@ -560,7 +562,7 @@
             loadAdminSchedules();
         }
 
-        // Заявки с МГНОВЕННЫМ ОБНОВЛЕНИЕМ
+        // Заявки
         async function loadRequests() {
             let res = await fetch(`${API_URL}/api/requests`);
             let items = await res.json();
@@ -593,7 +595,6 @@
             });
             let json = await res.json();
             
-            // Мгновенное обновление элемента на лету без ручной перезагрузки
             let badge = document.getElementById(`req-badge-${reqId}`);
             if(badge) {
                 badge.innerText = newStatus;
@@ -606,7 +607,7 @@
             let student_name = document.getElementById('reqName').value;
             let contact = document.getElementById('reqContact').value;
             let tariff = document.getElementById('reqTariffInput').value;
-            if(!student_name || !contact) return alert("Заполните имя и контакты");
+            if(!student_name || !contact) return alert("Укажите имя и контакт для связи!");
             let res = await fetch(`${API_URL}/api/request`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({student_name, contact, tariff: tariff || "Базовый"})
@@ -626,7 +627,7 @@
             document.getElementById('authNavBtn').innerText = "Войти";
             document.getElementById('authNavBtn').onclick = () => showPage('auth');
             showPage('home');
-            showToast("Вы вышли из системы", "🔒");
+            showToast("Вы вышли из аккаунта", "🔒");
         }
 
         window.onload = () => { 
