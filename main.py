@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -16,7 +17,7 @@ class UserDB(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, unique=True, index=True)
     password_hash = Column(String)
-    role = Column(String, default="guest") # Все всегда регистрации заходят как GUEST
+    role = Column(String, default="guest") # Строго guest по умолчанию
     tariff = Column(String, default="Не выбран")
     status = Column(String, default="Активен")
 
@@ -62,23 +63,7 @@ def get_db():
     try: yield db
     finally: db.close()
 
-def seed_data():
-    db = SessionLocal()
-    if db.query(StaffDB).count() == 0:
-        db.add_all([
-            StaffDB(name="Алексей Смирнов", subject="Высшая математика", experience="Стаж 8 лет", bio="Подготовка к ЦЭ и олимпиадам.", contact_info="TG: @smirnov_math", photo_url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400"),
-            StaffDB(name="Екатерина Ковалева", subject="Русский язык", experience="Стаж 12 лет", bio="Эксперт по сочинениям.", contact_info="TG: @kovaleva_rus", photo_url="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400"),
-            StaffDB(name="Дмитрий Волков", subject="Информатика & Python", experience="Стаж 5 лет", bio="Практикующий разработчик.", contact_info="TG: @volkov_code", photo_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400")
-        ])
-    if db.query(ScheduleDB).count() == 0:
-        db.add_all([
-            ScheduleDB(day="Понедельник", time="16:00 - 17:30", subject="Математика (ЦЭ)", teacher="Алексей Смирнов"),
-            ScheduleDB(day="Среда", time="17:00 - 18:30", subject="Русский язык", teacher="Екатерина Ковалева")
-        ])
-    db.commit()
-    db.close()
-seed_data()
-
+# Модели запросов с безопасными опциональными полями
 class UserRegister(BaseModel):
     username: str
     password: str
@@ -109,10 +94,10 @@ class ScheduleCreate(BaseModel):
 class StaffCreate(BaseModel):
     name: str
     subject: str
-    experience: str
-    bio: str
-    contact_info: str
-    photo_url: str
+    experience: Optional[str] = "Стаж 5 лет"
+    bio: Optional[str] = "Преподаватель центра"
+    contact_info: Optional[str] = "Telegram: @tutor_hub"
+    photo_url: Optional[str] = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"
 
 @app.post("/api/register")
 def register(user: UserRegister, db: Session = Depends(get_db)):
@@ -120,7 +105,7 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Логин уже занят!")
     hashed = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
-    # Абсолютно все получают роль GUEST по дефолту
+    # Регистрация строго с ролью guest
     new_user = UserDB(username=user.username, password_hash=hashed, role="guest")
     db.add(new_user)
     db.commit()
@@ -147,12 +132,12 @@ def get_all_users(db: Session = Depends(get_db)):
 @app.post("/api/admin/user/{user_id}")
 def update_user_by_admin(user_id: int, data: UserUpdateAdmin, db: Session = Depends(get_db)):
     user = db.query(UserDB).filter(UserDB.id == user_id).first()
-    if not user: raise HTTPException(status_code=404, detail="Не найден")
+    if not user: raise HTTPException(status_code=404, detail="Пользователь не найден")
     user.role = data.role
     user.tariff = data.tariff
     user.status = data.status
     db.commit()
-    return {"status": "success", "message": "Профиль обновлен!"}
+    return {"status": "success", "message": f"Профиль #{user_id} сохранен!", "user": {"id": user.id, "role": user.role, "tariff": user.tariff, "status": user.status}}
 
 @app.get("/api/staff")
 def get_staff(db: Session = Depends(get_db)):
@@ -160,9 +145,17 @@ def get_staff(db: Session = Depends(get_db)):
 
 @app.post("/api/admin/staff")
 def add_staff(item: StaffCreate, db: Session = Depends(get_db)):
-    db.add(StaffDB(**item.dict()))
+    new_staff = StaffDB(
+        name=item.name,
+        subject=item.subject,
+        experience=item.experience or "Стаж не указан",
+        bio=item.bio or "Описание отсутствует",
+        contact_info=item.contact_info or "Telegram: @tutor_hub",
+        photo_url=item.photo_url or "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"
+    )
+    db.add(new_staff)
     db.commit()
-    return {"status": "success", "message": "Преподаватель добавлен в штаб!"}
+    return {"status": "success", "message": "Преподаватель успешно добавлен!"}
 
 @app.get("/api/schedules")
 def get_schedules(db: Session = Depends(get_db)):
@@ -172,15 +165,15 @@ def get_schedules(db: Session = Depends(get_db)):
 def add_schedule(item: ScheduleCreate, db: Session = Depends(get_db)):
     db.add(ScheduleDB(**item.dict()))
     db.commit()
-    return {"status": "success", "message": "Занятие добавлено!"}
+    return {"status": "success", "message": "Урок добавлен!"}
 
 @app.delete("/api/admin/schedule/{sch_id}")
 def delete_schedule(sch_id: int, db: Session = Depends(get_db)):
     sch = db.query(ScheduleDB).filter(ScheduleDB.id == sch_id).first()
-    if not sch: raise HTTPException(status_code=404, detail="Занятие не найдено")
+    if not sch: raise HTTPException(status_code=404, detail="Урок не найден")
     db.delete(sch)
     db.commit()
-    return {"status": "success", "message": "Занятие удалено!"}
+    return {"status": "success", "message": "Урок удален!"}
 
 @app.post("/api/request")
 def create_request(req: RequestCreate, db: Session = Depends(get_db)):
@@ -198,4 +191,4 @@ def update_request_status(req_id: int, data: RequestUpdateStatus, db: Session = 
     if not req: raise HTTPException(status_code=404, detail="Заявка не найдена")
     req.status = data.status
     db.commit()
-    return {"status": "success", "message": "Статус обновлен!", "new_status": req.status}
+    return {"status": "success", "message": "Статус обновлен!"}
