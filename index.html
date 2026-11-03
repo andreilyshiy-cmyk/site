@@ -3,116 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Образовательный Центр Репетиторов</title>
+    <title>Образовательная платформа - Центр Репетиторов</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Фоновый холст для интерактивной паутинки */
+        #canvas-web {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .content-layer {
+            position: relative;
+            z-index: 10;
+        }
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+        .page-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-p-6">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen relative overflow-x-hidden">
 
-    <header class="max-w-4xl mx-auto p-4 flex justify-between items-center border-b border-slate-800">
-        <h1 class="text-xl font-bold text-blue-400">📚 Репетиторский Штаб</h1>
-        <div class="space-x-4">
-            <a href="#tariffs" class="hover:text-blue-400">Тарифы</a>
-            <a href="#staff" class="hover:text-blue-400">Преподаватели</a>
-            <a href="#hw" class="hover:text-blue-400">Домашние задания</a>
-        </div>
-    </header>
+    <!-- Холст для анимации паутинки -->
+    <canvas id="canvas-web"></canvas>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-12">
+    <div class="content-layer min-h-screen flex flex-col">
         
-        <!-- Герой-секция и Заявка -->
-        <section class="text-center py-10 bg-slate-800 rounded-2xl shadow-xl p-6">
-            <h2 class="text-3xl font-extrabold mb-4">Подготовка к экзаменам и учеба с экспертами</h2>
-            <p class="text-slate-400 mb-6">Подайте заявку на обучение прямо сейчас, и мы подберем вам индивидуальный план.</p>
-            
-            <div class="max-w-md mx-auto space-y-4 text-left">
-                <input type="text" id="reqName" placeholder="Ваше имя" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl">
-                <input type="text" id="reqContact" placeholder="Телефон или Telegram" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl">
-                <select id="reqTariff" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl">
-                    <option value="Базовый (10$/мес)">Тариф: Базовый ($10/мес)</option>
-                    <option value="Продвинутый (25$/мес)">Тариф: Продвинутый ($25/мес)</option>
-                    <option value="VIP с репетитором (50$/мес)">Тариф: VIP с репетитором ($50/мес)</option>
-                </select>
-                <button onclick="sendRequest()" class="w-full bg-blue-600 hover:bg-blue-500 font-bold p-3 rounded-xl">Подать заявку</button>
+        <!-- Шапка с внутренней навигацией -->
+        <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+            <div class="max-w-6xl mx-auto p-4 flex flex-wrap justify-between items-center gap-4">
+                <a href="#" onclick="showPage('home')" class="text-2xl font-black text-blue-500 tracking-wider flex items-center gap-2">
+                    🕸️ <span>TUTOR.HUB</span>
+                </a>
+                <nav class="flex space-x-1 md:space-x-4 text-sm font-semibold">
+                    <button onclick="showPage('home')" class="nav-btn px-3 py-2 rounded-lg hover:bg-slate-800 transition">Главная</button>
+                    <button onclick="showPage('tariffs')" class="nav-btn px-3 py-2 rounded-lg hover:bg-slate-800 transition">Тарифы</button>
+                    <button onclick="showPage('schedule')" class="nav-btn px-3 py-2 rounded-lg hover:bg-slate-800 transition">Расписание</button>
+                    <button onclick="showPage('staff')" class="nav-btn px-3 py-2 rounded-lg hover:bg-slate-800 transition">Штаб</button>
+                    <button onclick="showPage('account')" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 font-bold transition ml-2">Войти</button>
+                </nav>
             </div>
-        </section>
+        </header>
 
-        <!-- Штаб работников -->
-        <section id="staff">
-            <h3 class="text-2xl font-bold mb-4">👥 Наш преподавательский штаб</h3>
-            <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Динамически загружается -->
-            </div>
-        </section>
+        <!-- Основной контент (Переключение между страницами) -->
+        <main class="max-w-5xl mx-auto p-6 flex-grow w-full">
 
-        <!-- Домашние задания -->
-        <section id="hw" class="bg-slate-800 p-6 rounded-2xl">
-            <h3 class="text-2xl font-bold mb-4">📖 Актуальные домашние задания</h3>
-            <div id="hwContainer" class="space-y-4">
-                <!-- Динамически загружается -->
-            </div>
-        </section>
+            <!-- 1. СТРАНИЦА: Главная / Заставка -->
+            <section id="page-home" class="page-section active py-16 text-center">
+                <div class="inline-block p-2 px-4 bg-blue-900/40 border border-blue-500/30 rounded-full text-blue-400 text-xs font-bold mb-6">
+                    🚀 Платформа подготовки нового поколения
+                </div>
+                <h1 class="text-5xl md:text-6xl font-black mb-6 leading-tight">
+                    Учись легко. <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Связывай знания в единое целое.</span>
+                </h1>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10">
+                    Индивидуальные планы, интерактивные задания, опытные репетиторы и круглосуточная поддержка в едином кабинете.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="showPage('tariffs')" class="bg-blue-600 hover:bg-blue-500 font-bold px-8 py-4 rounded-xl shadow-lg transition">Выбрать тариф</button>
+                    <button onclick="showPage('schedule')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold px-8 py-4 rounded-xl transition">Смотреть расписание</button>
+                </div>
+            </section>
 
-        <div id="messageBox" class="hidden p-4 rounded-xl text-center font-bold"></div>
-    </main>
+            <!-- 2. СТРАНИЦА: Тарифы и Заявка -->
+            <section id="page-tariffs" class="page-section space-y-10">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold mb-2">Тарифные планы</h2>
+                    <p class="text-slate-400">Выберите подходящий формат подготовки</p>
+                </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Базовый</h3>
+                            <p class="text-3xl font-black text-blue-400 mb-4">$10 <span class="text-xs text-slate-500 font-normal">/ мес</span></p>
+                            <ul class="text-sm space-y-2 text-slate-300 mb-6">
+                                <li>✅ Групповые онлайн-занятия</li>
+                                <li>✅ Доступ к базе материалов</li>
+                                <li>❌ Проверка ДЗ преподавателем</li>
+                            </ul>
+                        </div>
+                        <button onclick="selectTariff('Базовый')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Записаться</button>
+                    </div>
+
+                    <div class="bg-slate-900/90 border-2 border-blue-500 p-6 rounded-2xl flex flex-col justify-between relative shadow-xl shadow-blue-500/10">
+                        <span class="absolute -top-3 right-4 bg-blue-500 text-xs font-bold px-3 py-1 rounded-full">Популярный</span>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Продвинутый</h3>
+                            <p class="text-3xl font-black text-blue-400 mb-4">$25 <span class="text-xs text-slate-500 font-normal">/ мес</span></p>
+                            <ul class="text-sm space-y-2 text-slate-300 mb-6">
+                                <li>✅ Всё из Базового</li>
+                                <li>✅ Проверка ДЗ с разбором ошибок</li>
+                                <li>✅ Тесты формата ЦЭ/ЕГЭ</li>
+                            </ul>
+                        </div>
+                        <button onclick="selectTariff('Продвинутый')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-xl transition">Записаться</button>
+                    </div>
+
+                    <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">VIP Индивидуальный</h3>
+                            <p class="text-3xl font-black text-blue-400 mb-4">$50 <span class="text-xs text-slate-500 font-normal">/ мес</span></p>
+                            <ul class="text-sm space-y-2 text-slate-300 mb-6">
+                                <li>✅ Личный репетитор 1-на-1</li>
+                                <li>✅ Персональное расписание</li>
+                                <li>✅ Поддержка 24/7 в Telegram</li>
+                            </ul>
+                        </div>
+                        <button onclick="selectTariff('VIP')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-xl transition">Записаться</button>
+                    </div>
+                </div>
+
+                <!-- Форма подачи заявки -->
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl max-w-lg mx-auto">
+                    <h3 class="text-xl font-bold mb-4 text-center">Оставить заявку на обучение</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="reqName" placeholder="Ваше имя" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
+                        <input type="text" id="reqContact" placeholder="Телефон или Telegram (@username)" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
+                        <input type="text" id="reqTariffInput" readonly placeholder="Выбранный тариф" class="w-full p-3 bg-slate-950 border border-slate-800 text-blue-400 font-bold rounded-xl">
+                        <button onclick="sendRequest()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl transition">Отправить заявку</button>
+                    </div>
+                    <div id="statusMsg" class="mt-4 hidden p-3 rounded-xl text-center text-sm font-bold"></div>
+                </div>
+            </section>
+
+            <!-- 3. СТРАНИЦА: Расписание -->
+            <section id="page-schedule" class="page-section space-y-6">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold mb-2">📅 Расписание занятий</h2>
+                    <p class="text-slate-400">График предстоящих уроков и консультаций</p>
+                </div>
+                <div id="scheduleGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Загружается с сервера -->
+                </div>
+            </section>
+
+            <!-- 4. СТРАНИЦА: Штаб работников -->
+            <section id="page-staff" class="page-section space-y-6">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold mb-2">👨‍🏫 Наш преподавательский штаб</h2>
+                    <p class="text-slate-400">Эксперты и репетиторы платформы</p>
+                </div>
+                <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Загружается с сервера -->
+                </div>
+            </section>
+
+            <!-- 5. СТРАНИЦА: Личный кабинет (Вход) -->
+            <section id="page-account" class="page-section max-w-md mx-auto">
+                <div class="bg-slate-900/90 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+                    <h2 class="text-2xl font-extrabold mb-6 text-center">🔑 Вход в личный кабинет</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400">Логин:</label>
+                            <input type="text" id="loginUsername" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400">Пароль:</label>
+                            <input type="password" id="loginPassword" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                        <button onclick="loginUser()" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-xl transition">Войти</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
+            © 2026 TUTOR.HUB — Образовательная платформа. Все права защищены.
+        </footer>
+    </div>
+
+    <!-- Скрипт логики и анимации паутинки -->
     <script>
-        const API_URL = "https://tutor-backend.onrender.com"; // Замените на вашу ссылку с Render
+        const API_URL = "https://edu-tutor-backend.onrender.com";
 
-        function showMsg(text, isError = false) {
-            const box = document.getElementById('messageBox');
-            box.classList.remove('hidden', 'bg-emerald-900', 'bg-red-900');
-            box.classList.add(isError ? 'bg-red-900' : 'bg-emerald-900');
-            box.innerText = text;
+        // Переключение внутренних страниц (SPA)
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            const activeSec = document.getElementById(`page-${pageId}`);
+            if (activeSec) activeSec.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function selectTariff(tariffName) {
+            document.getElementById('reqTariffInput').value = `Тариф: ${tariffName}`;
+            showPage('tariffs');
+            document.getElementById('reqName').focus();
+        }
+
+        // Загрузка данных с сервера
         async function sendRequest() {
-            const data = {
-                student_name: document.getElementById('reqName').value,
-                contact: document.getElementById('reqContact').value,
-                tariff: document.getElementById('reqTariff').value
-            };
+            const name = document.getElementById('reqName').value.trim();
+            const contact = document.getElementById('reqContact').value.trim();
+            const tariff = document.getElementById('reqTariffInput').value;
+
+            if (!name || !contact) {
+                alert("Заполните имя и контактные данные!");
+                return;
+            }
+
             try {
                 let res = await fetch(`${API_URL}/api/request`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({ student_name: name, contact: contact, tariff: tariff || "Не выбран" })
                 });
-                let json = await res.json();
-                showMsg(json.message);
-            } catch(e) { showMsg("Ошибка отправки заявки", true); }
+                let result = await res.json();
+                const box = document.getElementById('statusMsg');
+                box.classList.remove('hidden');
+                box.className = "mt-4 p-3 rounded-xl text-center text-sm font-bold bg-emerald-900 text-emerald-200";
+                box.innerText = result.message;
+            } catch (e) {
+                alert("Ошибка отправки заявки");
+            }
+        }
+
+        async function loadSchedules() {
+            try {
+                let res = await fetch(`${API_URL}/api/schedules`);
+                let items = await res.json();
+                let html = "";
+                items.forEach(i => {
+                    html += `<div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                        <span class="text-xs bg-blue-900/60 text-blue-300 px-2.5 py-1 rounded-full font-bold">${i.day} в ${i.time}</span>
+                        <h4 class="font-bold text-lg mt-2">${i.subject}</h4>
+                        <p class="text-sm text-slate-400">Преподаватель: ${i.teacher}</p>
+                    </div>`;
+                });
+                document.getElementById('scheduleGrid').innerHTML = html || "<p class='text-slate-500'>Расписание пустует.</p>";
+            } catch (e) {}
         }
 
         async function loadStaff() {
-            let res = await fetch(`${API_URL}/api/staff`);
-            let staff = await res.json();
-            let html = "";
-            staff.forEach(s => {
-                html += `<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center">
-                    <img src="${s.photo_url}" class="w-24 h-24 mx-auto rounded-full object-cover mb-3">
-                    <h4 class="font-bold text-lg">${s.name}</h4>
-                    <p class="text-xs text-blue-400">${s.role_title}</p>
-                </div>`;
-            });
-            document.getElementById('staffGrid').innerHTML = html || "<p class='text-slate-400'>Штаб пустой</p>";
-        }
-
-        async function loadHw() {
-            let res = await fetch(`${API_URL}/api/homeworks`);
-            let hws = await res.json();
-            let html = "";
-            hws.forEach(h => {
-                html += `<div class="p-4 bg-slate-900 rounded-xl border border-slate-700">
-                    <span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">${h.subject}</span>
-                    <h4 class="font-bold text-lg mt-2">${h.title}</h4>
-                    <p class="text-slate-400 text-sm mt-1">${h.description}</p>
-                </div>`;
-            });
-            document.getElementById('hwContainer').innerHTML = html || "<p class='text-slate-400'>Нет заданий</p>";
+            try {
+                let res = await fetch(`${API_URL}/api/staff`);
+                let items = await res.json();
+                let html = "";
+                items.forEach(s => {
+                    html += `<div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 text-center">
+                        <img src="${s.photo_url || 'https://via.placeholder.com/150'}" class="w-24 h-24 mx-auto rounded-full object-cover mb-3 border-2 border-blue-500/30">
+                        <h4 class="font-bold text-lg">${s.name}</h4>
+                        <p class="text-xs text-blue-400 font-bold">${s.subject}</p>
+                    </div>`;
+                });
+                document.getElementById('staffGrid').innerHTML = html || "<p class='text-slate-500'>Штаб пока не заполнен.</p>";
+            } catch (e) {}
         }
 
         window.onload = () => {
+            loadSchedules();
             loadStaff();
-            loadHw();
+            initWebCanvas(); // Запуск паутинки
+        };
+
+        /* -------------------------------------------------------------
+           ИНТЕРАКТИВНАЯ АНИМАЦИЯ ПАУТИНКИ У КУРСОРА (Canvas Web Effect)
+        ------------------------------------------------------------- */
+        function initWebCanvas() {
+            const canvas = document.getElementById('canvas-web');
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const mouse = { x: null, y: null, radius: 150 };
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.x;
+                mouse.y = e.y;
+            });
+
+            window.addEventListener('mouseleave', () => {
+                mouse.x = null;
+                mouse.y = null;
+            });
+
+            // Точки паутинки
+            const numParticles = Math.floor((width * height) / 12000);
+            const particles = [];
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 1.2;
+                    this.vy = (Math.random() - 0.5) * 1.2;
+                    this.radius = Math.random() * 2 + 1;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.5)';
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    // Связывание нитями с курсором мыши
+                    if (mouse.x !== null && mouse.y !== null) {
+                        let dx = mouse.x - particles[i].x;
+                        let dy = mouse.y - particles[i].y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < mouse.radius) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(mouse.x, mouse.y);
+                            ctx.strokeStyle = `rgba(59, 130, 246, ${1 - dist / mouse.radius})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Связывание нитями между соседними точками
+                    for (let j = i + 1; j < particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(30, 58, 138, ${1 - dist / 100})`;
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            animate();
         }
     </script>
 </body>
