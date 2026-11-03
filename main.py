@@ -17,9 +17,11 @@ class UserDB(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, unique=True, index=True)
     password_hash = Column(String)
-    role = Column(String, default="guest") # Строго guest по умолчанию
+    role = Column(String, default="guest")
     tariff = Column(String, default="Не выбран")
     status = Column(String, default="Активен")
+    teacher_name = Column(String, default="Не назначен")
+    lesson_link = Column(String, default="")
 
 class RequestDB(Base):
     __tablename__ = "requests"
@@ -63,7 +65,6 @@ def get_db():
     try: yield db
     finally: db.close()
 
-# Модели запросов с безопасными опциональными полями
 class UserRegister(BaseModel):
     username: str
     password: str
@@ -76,6 +77,8 @@ class UserUpdateAdmin(BaseModel):
     role: str
     tariff: str
     status: str
+    teacher_name: Optional[str] = "Не назначен"
+    lesson_link: Optional[str] = ""
 
 class RequestCreate(BaseModel):
     student_name: str
@@ -104,8 +107,6 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(UserDB).filter(UserDB.username == user.username).first():
         raise HTTPException(status_code=400, detail="Логин уже занят!")
     hashed = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
-    # Регистрация строго с ролью guest
     new_user = UserDB(username=user.username, password_hash=hashed, role="guest")
     db.add(new_user)
     db.commit()
@@ -122,12 +123,22 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "username": db_user.username, 
         "role": db_user.role,
         "tariff": db_user.tariff,
-        "status_account": db_user.status
+        "status_account": db_user.status,
+        "teacher_name": db_user.teacher_name,
+        "lesson_link": db_user.lesson_link
     }
 
 @app.get("/api/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
-    return [{"user_id": u.id, "username": u.username, "role": u.role, "tariff": u.tariff, "status": u.status} for u in db.query(UserDB).all()]
+    return [{
+        "user_id": u.id, 
+        "username": u.username, 
+        "role": u.role, 
+        "tariff": u.tariff, 
+        "status": u.status,
+        "teacher_name": u.teacher_name,
+        "lesson_link": u.lesson_link
+    } for u in db.query(UserDB).all()]
 
 @app.post("/api/admin/user/{user_id}")
 def update_user_by_admin(user_id: int, data: UserUpdateAdmin, db: Session = Depends(get_db)):
@@ -136,8 +147,10 @@ def update_user_by_admin(user_id: int, data: UserUpdateAdmin, db: Session = Depe
     user.role = data.role
     user.tariff = data.tariff
     user.status = data.status
+    user.teacher_name = data.teacher_name or "Не назначен"
+    user.lesson_link = data.lesson_link or ""
     db.commit()
-    return {"status": "success", "message": f"Профиль #{user_id} сохранен!", "user": {"id": user.id, "role": user.role, "tariff": user.tariff, "status": user.status}}
+    return {"status": "success", "message": f"Профиль #{user_id} сохранен!"}
 
 @app.get("/api/staff")
 def get_staff(db: Session = Depends(get_db)):
@@ -148,14 +161,14 @@ def add_staff(item: StaffCreate, db: Session = Depends(get_db)):
     new_staff = StaffDB(
         name=item.name,
         subject=item.subject,
-        experience=item.experience or "Стаж не указан",
-        bio=item.bio or "Описание отсутствует",
-        contact_info=item.contact_info or "Telegram: @tutor_hub",
-        photo_url=item.photo_url or "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"
+        experience=item.experience,
+        bio=item.bio,
+        contact_info=item.contact_info,
+        photo_url=item.photo_url
     )
     db.add(new_staff)
     db.commit()
-    return {"status": "success", "message": "Преподаватель успешно добавлен!"}
+    return {"status": "success", "message": "Преподаватель добавлен!"}
 
 @app.get("/api/schedules")
 def get_schedules(db: Session = Depends(get_db)):
