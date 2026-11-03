@@ -16,7 +16,7 @@ class UserDB(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, unique=True, index=True)
     password_hash = Column(String)
-    role = Column(String, default="student")
+    role = Column(String, default="guest") # По умолчанию гость
     tariff = Column(String, default="Не выбран")
     status = Column(String, default="Активен")
 
@@ -26,7 +26,7 @@ class RequestDB(Base):
     student_name = Column(String)
     contact = Column(String)
     tariff = Column(String)
-    status = Column(String, default="Новая")
+    status = Column(String, default="На рассмотрении") # Статусы заявок
 
 class ScheduleDB(Base):
     __tablename__ = "schedules"
@@ -97,6 +97,9 @@ class RequestCreate(BaseModel):
     contact: str
     tariff: str
 
+class RequestUpdateStatus(BaseModel):
+    status: str
+
 class ScheduleCreate(BaseModel):
     day: str
     time: str
@@ -108,7 +111,10 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(UserDB).filter(UserDB.username == user.username).first():
         raise HTTPException(status_code=400, detail="Логин уже занят!")
     hashed = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    role = "admin" if db.query(UserDB).count() == 0 else "student"
+    
+    # Первый пользователь становится администратором, остальные — гостями (role="guest")
+    role = "admin" if db.query(UserDB).count() == 0 else "guest"
+    
     new_user = UserDB(username=user.username, password_hash=hashed, role=role)
     db.add(new_user)
     db.commit()
@@ -165,3 +171,11 @@ def create_request(req: RequestCreate, db: Session = Depends(get_db)):
 @app.get("/api/requests")
 def get_requests(db: Session = Depends(get_db)):
     return db.query(RequestDB).all()
+
+@app.post("/api/admin/request/{req_id}")
+def update_request_status(req_id: int, data: RequestUpdateStatus, db: Session = Depends(get_db)):
+    req = db.query(RequestDB).filter(RequestDB.id == req_id).first()
+    if not req: raise HTTPException(status_code=404, detail="Заявка не найдена")
+    req.status = data.status
+    db.commit()
+    return {"status": "success", "message": "Статус заявки обновлен!"}
