@@ -19,6 +19,7 @@
 
     <canvas id="canvas-web"></canvas>
 
+    <!-- Всплывающий тост -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 bg-slate-900 border border-cyan-500/40 text-cyan-300 font-bold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
         <span id="toastIcon">✨</span>
         <span id="toastText">Уведомление</span>
@@ -123,7 +124,7 @@
                 </div>
             </section>
 
-            <!-- Расписание для учеников -->
+            <!-- Расписание -->
             <section id="page-schedule" class="page-section space-y-6">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold mb-2">📅 Расписание занятий</h2>
@@ -137,7 +138,7 @@
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-cyan-400">🗓️ Управление расписанием</h2>
-                        <p class="text-xs text-slate-400 mt-1">Добавление и мгновенное удаление уроков</p>
+                        <p class="text-xs text-slate-400 mt-1">Добавление и удаление предметов</p>
                     </div>
                 </div>
 
@@ -170,7 +171,7 @@
                 <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
             </section>
 
-            <!-- Модальное окно создания Преподавателя -->
+            <!-- Модалка Преподавателя -->
             <div id="addStaffModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
                     <button onclick="closeAddStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕</button>
@@ -185,7 +186,7 @@
                 </div>
             </div>
 
-            <!-- Модальное окно просмотра учителя -->
+            <!-- Просмотр Учителя -->
             <div id="teacherModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
                     <button onclick="closeTeacherModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
@@ -202,12 +203,12 @@
                 </div>
             </div>
 
-            <!-- Пользователи -->
+            <!-- База Пользователей (Админка по шаблону medusa-cheat) -->
             <section id="page-users" class="page-section max-w-4xl mx-auto space-y-6">
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
-                        <h2 class="text-2xl font-black text-purple-400">👥 База пользователей</h2>
-                        <p class="text-xs text-slate-400 mt-1">Управление ролями, тарифами, преподавателями и ссылками</p>
+                        <h2 class="text-2xl font-black text-purple-400">👥 Управление пользователями (/admin/users)</h2>
+                        <p class="text-xs text-slate-400 mt-1">Редактирование ролей, статусов, преподавателей и удаление аккаунтов</p>
                     </div>
                     <button onclick="loadAllUsers()" class="text-xs bg-purple-950 text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 font-bold">Обновить</button>
                 </div>
@@ -219,7 +220,7 @@
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-emerald-400">📋 Заявки на обучение</h2>
-                        <p class="text-xs text-slate-400 mt-1">Клик по кнопке моментально обновляет статус</p>
+                        <p class="text-xs text-slate-400 mt-1">Клик по кнопке моментально меняет статус</p>
                     </div>
                     <button onclick="loadRequests()" class="text-xs bg-emerald-950 text-emerald-300 px-4 py-2 rounded-xl border border-emerald-500/30 font-bold">Обновить</button>
                 </div>
@@ -258,16 +259,15 @@
                 </div>
 
                 <div id="guestView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
-                    <h3 class="text-xl font-bold text-amber-400">⏳ Ожидание роли Ученика</h3>
-                    <p class="text-slate-400 text-sm">Вы вошли как <b>Гость</b>. Администратор должен подтвердить ваш аккаунт, чтобы вам открылось расписание.</p>
+                    <h3 class="text-xl font-bold text-amber-400">⏳ Ожидание подтверждения роли</h3>
+                    <p class="text-slate-400 text-sm">Вы вошли как <b>Гость</b>. Администратор назначит вам роль Ученика для открытия доступа к расписанию.</p>
                 </div>
 
-                <!-- Кабинет ученика с преподавателем и ссылкой -->
                 <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4">
                     <h3 class="text-xl font-bold text-center">🎓 Ваш учебный кабинет</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-500 uppercase font-bold">Ваш персональный преподаватель</p>
+                            <p class="text-xs text-slate-500 uppercase font-bold">Ваш преподаватель</p>
                             <p id="studentTeacher" class="text-base font-bold text-cyan-400 mt-1">Не назначен</p>
                         </div>
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
@@ -282,7 +282,7 @@
 
                 <div id="adminView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
                     <h3 class="text-xl font-bold text-cyan-400">⚡ Доступ Администратора</h3>
-                    <p class="text-slate-400 text-sm">Используйте вкладки сверху для управления.</p>
+                    <p class="text-slate-400 text-sm">Вам доступны все панели управления в шапке сайта.</p>
                 </div>
             </section>
 
@@ -290,7 +290,7 @@
     </div>
 
     <script>
-        const API_URL = "https://site-34ib.onrender.com"; // Укажите ваш актуальный адрес бэкенда на Render
+        const API_URL = "https://site-34ib.onrender.com"; // Укажите ваш актуальный URL бэкенда
         let currentUser = null;
 
         function showToast(text, icon="✨") {
@@ -337,7 +337,7 @@
             });
             let json = await res.json();
             if(!res.ok) return alert(json.detail);
-            showToast("Вы зарегистрированы со статусом Гость!", "🎉");
+            showToast("Вы успешно зарегистрированы!", "🎉");
             switchAuth('login');
         }
 
@@ -365,7 +365,7 @@
             
             document.getElementById('cabTitle').innerText = `👋 ${currentUser.username}`;
             document.getElementById('cabRole').innerText = `Роль: ${currentUser.role}`;
-            document.getElementById('cabId').innerText = `ID: #${currentUser.user_id}`;
+            document.getElementById('cabId').innerText = `Порядковый ID: #${currentUser.user_id}`;
 
             if(currentUser.role === 'admin' || currentUser.role === 'teacher') {
                 document.getElementById('navUsersBtn').classList.remove('hidden');
@@ -389,7 +389,6 @@
                 document.getElementById('studentView').classList.remove('hidden');
                 document.getElementById('guestView').classList.add('hidden');
 
-                // Вывод преподавателя и ссылки для ученика
                 document.getElementById('studentTeacher').innerText = currentUser.teacher_name || "Не назначен";
                 let linkBtn = document.getElementById('studentLinkBtn');
                 let linkText = document.getElementById('studentLinkText');
@@ -413,11 +412,13 @@
             }
         }
 
+        // Вывод всех пользователей по ID (Полная панель редактирования)
         async function loadAllUsers() {
             let res = await fetch(`${API_URL}/api/admin/users`);
             let users = await res.json();
             let html = "";
             users.forEach(u => {
+                let userTariff = u.tariff || "Не выбран";
                 html += `
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3 card-hover">
                     <div class="flex justify-between items-center">
@@ -425,25 +426,25 @@
                             <span class="text-xs bg-purple-950 text-purple-300 px-2.5 py-0.5 rounded font-bold">ID: #${u.user_id}</span>
                             <h4 class="font-bold text-base mt-1 inline-block ml-2">${u.username}</h4>
                         </div>
-                        <span class="text-xs text-slate-400">Роль: <b class="text-purple-300">${u.role}</b></span>
+                        <span class="text-xs text-slate-400">Текущий статус: <b class="text-purple-300">${u.role}</b></span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold">Роль</label>
                             <select id="role-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="guest" ${u.role==='guest'?'selected':''}>Гость</option>
-                                <option value="student" ${u.role==='student'?'selected':''}>Ученик</option>
-                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель</option>
-                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ</option>
+                                <option value="guest" ${u.role==='guest'?'selected':''}>Гость (guest)</option>
+                                <option value="student" ${u.role==='student'?'selected':''}>Ученик (student)</option>
+                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель (teacher)</option>
+                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ (admin)</option>
                             </select>
                         </div>
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold">Тариф</label>
                             <select id="tariff-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="Не выбран" ${u.tariff==='Не выбран'?'selected':''}>Не выбран</option>
-                                <option value="Базовый (35 BYN)" ${u.tariff.includes('Базовый')?'selected':''}>Базовый (35 BYN)</option>
-                                <option value="Продвинутый (80 BYN)" ${u.tariff.includes('Продвинутый')?'selected':''}>Продвинутый (80 BYN)</option>
-                                <option value="VIP (150 BYN)" ${u.tariff.includes('VIP')?'selected':''}>VIP (150 BYN)</option>
+                                <option value="Не выбран" ${userTariff==='Не выбран'?'selected':''}>Не выбран</option>
+                                <option value="Базовый (35 BYN)" ${userTariff.includes('Базовый')?'selected':''}>Базовый (35 BYN)</option>
+                                <option value="Продвинутый (80 BYN)" ${userTariff.includes('Продвинутый')?'selected':''}>Продвинутый (80 BYN)</option>
+                                <option value="VIP (150 BYN)" ${userTariff.includes('VIP')?'selected':''}>VIP (150 BYN)</option>
                             </select>
                         </div>
                         <div>
@@ -456,7 +457,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
                         <div>
-                            <label class="text-[10px] text-slate-500 uppercase font-bold">Назначенный преподаватель</label>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold">Преподаватель</label>
                             <input type="text" id="teacher-${u.user_id}" value="${u.teacher_name || ''}" placeholder="ФИО преподавателя" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
                         </div>
                         <div>
@@ -464,9 +465,14 @@
                             <input type="text" id="link-${u.user_id}" value="${u.lesson_link || ''}" placeholder="https://..." class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
                         </div>
                     </div>
-                    <button onclick="updateUser(${u.user_id})" class="w-full bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500/30 text-xs font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
-                        💾 Сохранить #${u.user_id}
-                    </button>
+                    <div class="flex gap-2 pt-1">
+                        <button onclick="updateUser(${u.user_id})" class="flex-1 bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500/30 text-xs font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
+                            💾 Сохранить #${u.user_id}
+                        </button>
+                        <button onclick="deleteUser(${u.user_id})" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-500/30 text-xs font-bold px-4 py-2 rounded-lg transition">
+                            🗑️ Удалить
+                        </button>
+                    </div>
                 </div>`;
             });
             document.getElementById('usersListContainer').innerHTML = html || "<p class='text-slate-500'>Нет зарегистрированных пользователей.</p>";
@@ -490,7 +496,15 @@
             loadAllUsers();
         }
 
-        // Штаб
+        async function deleteUser(userId) {
+            if(!confirm(`Вы уверены, что хотите удалить пользователя #${userId}?`)) return;
+            let res = await fetch(`${API_URL}/api/admin/user/${userId}`, { method: 'DELETE' });
+            let json = await res.json();
+            showToast(json.message, "🗑️");
+            loadAllUsers();
+        }
+
+        // Преподаватели
         async function loadStaff() {
             let res = await fetch(`${API_URL}/api/staff`);
             let items = await res.json();
@@ -525,7 +539,7 @@
                 body: JSON.stringify({name, subject, experience, bio, contact_info, photo_url})
             });
             let json = await res.json();
-            if(!res.ok) return alert("Ошибка при сохранении преподавателя!");
+            if(!res.ok) return alert("Ошибка при добавлении преподавателя!");
 
             showToast("Преподаватель добавлен!", "👨‍🏫");
             closeAddStaffModal();
