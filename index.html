@@ -170,7 +170,7 @@
                 <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
             </section>
 
-            <!-- Модальное окно создания Преподавателя (Админ) -->
+            <!-- Модальное окно создания Преподавателя -->
             <div id="addStaffModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
                     <button onclick="closeAddStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕</button>
@@ -207,7 +207,7 @@
                 <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-black text-purple-400">👥 База пользователей</h2>
-                        <p class="text-xs text-slate-400 mt-1">Редактирование ролей и мгновенное сохранение</p>
+                        <p class="text-xs text-slate-400 mt-1">Управление ролями, тарифами, преподавателями и ссылками</p>
                     </div>
                     <button onclick="loadAllUsers()" class="text-xs bg-purple-950 text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 font-bold">Обновить</button>
                 </div>
@@ -262,14 +262,27 @@
                     <p class="text-slate-400 text-sm">Вы вошли как <b>Гость</b>. Администратор должен подтвердить ваш аккаунт, чтобы вам открылось расписание.</p>
                 </div>
 
-                <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
-                    <h3 class="text-xl font-bold">🎓 Кабинет Ученика</h3>
-                    <p class="text-slate-400 text-sm">Вам доступна вкладка «Расписание» в верхнем меню.</p>
+                <!-- Кабинет ученика с преподавателем и ссылкой -->
+                <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4">
+                    <h3 class="text-xl font-bold text-center">🎓 Ваш учебный кабинет</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <p class="text-xs text-slate-500 uppercase font-bold">Ваш персональный преподаватель</p>
+                            <p id="studentTeacher" class="text-base font-bold text-cyan-400 mt-1">Не назначен</p>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                            <div>
+                                <p class="text-xs text-slate-500 uppercase font-bold">Ссылка на онлайн-урок</p>
+                                <p id="studentLinkText" class="text-xs text-slate-300 truncate mt-1">Ссылка пока отсутствует</p>
+                            </div>
+                            <a id="studentLinkBtn" href="#" target="_blank" class="hidden mt-3 w-full bg-cyan-600 hover:bg-cyan-500 text-xs font-bold py-2 rounded-lg text-center transition">Подключиться к уроку 🚀</a>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="adminView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
                     <h3 class="text-xl font-bold text-cyan-400">⚡ Доступ Администратора</h3>
-                    <p class="text-slate-400 text-sm">Вам доступны вкладки «Пользователи», «Заявки» и «Упр. Расписанием».</p>
+                    <p class="text-slate-400 text-sm">Используйте вкладки сверху для управления.</p>
                 </div>
             </section>
 
@@ -277,7 +290,7 @@
     </div>
 
     <script>
-        const API_URL = "https://site-34ib.onrender.com"; // Актуальный URL Render
+        const API_URL = "https://site-34ib.onrender.com"; // Укажите ваш актуальный адрес бэкенда на Render
         let currentUser = null;
 
         function showToast(text, icon="✨") {
@@ -375,6 +388,19 @@
                 document.getElementById('adminView').classList.add('hidden');
                 document.getElementById('studentView').classList.remove('hidden');
                 document.getElementById('guestView').classList.add('hidden');
+
+                // Вывод преподавателя и ссылки для ученика
+                document.getElementById('studentTeacher').innerText = currentUser.teacher_name || "Не назначен";
+                let linkBtn = document.getElementById('studentLinkBtn');
+                let linkText = document.getElementById('studentLinkText');
+                if(currentUser.lesson_link) {
+                    linkText.innerText = currentUser.lesson_link;
+                    linkBtn.href = currentUser.lesson_link;
+                    linkBtn.classList.remove('hidden');
+                } else {
+                    linkText.innerText = "Ссылка появится позже";
+                    linkBtn.classList.add('hidden');
+                }
             } else {
                 document.getElementById('navUsersBtn').classList.add('hidden');
                 document.getElementById('navReqBtn').classList.add('hidden');
@@ -399,16 +425,16 @@
                             <span class="text-xs bg-purple-950 text-purple-300 px-2.5 py-0.5 rounded font-bold">ID: #${u.user_id}</span>
                             <h4 class="font-bold text-base mt-1 inline-block ml-2">${u.username}</h4>
                         </div>
-                        <span class="text-xs text-slate-400">Текущий статус: <b class="text-purple-300">${u.role}</b></span>
+                        <span class="text-xs text-slate-400">Роль: <b class="text-purple-300">${u.role}</b></span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold">Роль</label>
                             <select id="role-${u.user_id}" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold">
-                                <option value="guest" ${u.role==='guest'?'selected':''}>Гость (guest)</option>
-                                <option value="student" ${u.role==='student'?'selected':''}>Ученик (student)</option>
-                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель (teacher)</option>
-                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ (admin)</option>
+                                <option value="guest" ${u.role==='guest'?'selected':''}>Гость</option>
+                                <option value="student" ${u.role==='student'?'selected':''}>Ученик</option>
+                                <option value="teacher" ${u.role==='teacher'?'selected':''}>Учитель</option>
+                                <option value="admin" ${u.role==='admin'?'selected':''}>Админ</option>
                             </select>
                         </div>
                         <div>
@@ -428,6 +454,16 @@
                             </select>
                         </div>
                     </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold">Назначенный преподаватель</label>
+                            <input type="text" id="teacher-${u.user_id}" value="${u.teacher_name || ''}" placeholder="ФИО преподавателя" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold">Ссылка на урок (Zoom/Teams)</label>
+                            <input type="text" id="link-${u.user_id}" value="${u.lesson_link || ''}" placeholder="https://..." class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs">
+                        </div>
+                    </div>
                     <button onclick="updateUser(${u.user_id})" class="w-full bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500/30 text-xs font-bold py-2 rounded-lg transition flex justify-center items-center gap-2">
                         💾 Сохранить #${u.user_id}
                     </button>
@@ -440,10 +476,12 @@
             let role = document.getElementById(`role-${userId}`).value;
             let tariff = document.getElementById(`tariff-${userId}`).value;
             let status = document.getElementById(`status-${userId}`).value;
+            let teacher_name = document.getElementById(`teacher-${userId}`).value;
+            let lesson_link = document.getElementById(`link-${userId}`).value;
 
             let res = await fetch(`${API_URL}/api/admin/user/${userId}`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({role, tariff, status})
+                body: JSON.stringify({role, tariff, status, teacher_name, lesson_link})
             });
             let json = await res.json();
             if(!res.ok) return alert("Ошибка при сохранении!");
