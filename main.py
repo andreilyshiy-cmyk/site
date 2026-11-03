@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Header
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import bcrypt
+import uuid
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./platform.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
@@ -14,10 +15,12 @@ Base = declarative_base()
 class UserDB(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, unique=True, index=True) # Уникальный публичный ID
     username = Column(String, unique=True, index=True)
     password_hash = Column(String)
     role = Column(String, default="student") # 'student', 'teacher', 'admin'
-    ip_address = Column(String, nullable=True)
+    tariff = Column(String, default="Не выбран")
+    status = Column(String, default="Активен")
 
 class RequestDB(Base):
     __tablename__ = "requests"
@@ -56,10 +59,8 @@ app.add_middleware(
 
 def get_db():
     db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    try: yield db
+    finally: db.close()
 
 def seed_data():
     db = SessionLocal()
@@ -76,7 +77,6 @@ def seed_data():
         ])
     db.commit()
     db.close()
-
 seed_data()
 
 class UserRegister(BaseModel):
@@ -87,9 +87,10 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
-class RoleAssign(BaseModel):
-    target_username: str
-    new_role: str
+class UserUpdateAdmin(BaseModel):
+    role: str
+    tariff: str
+    status: str
 
 class RequestCreate(BaseModel):
     student_name: str
@@ -102,21 +103,17 @@ class ScheduleCreate(BaseModel):
     subject: str
     teacher: str
 
-class StaffCreate(BaseModel):
-    name: str
-    subject: str
-    experience: str
-    photo_url: str
-
 @app.post("/api/register")
-def register(user: UserRegister, request: Request, db: Session = Depends(get_db)):
+def register(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(UserDB).filter(UserDB.username == user.username).first():
         raise HTTPException(status_code=400, detail="Логин уже занят!")
     hashed = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
-    # Первый зарегистрированный пользователь или с вашего ПК получает права админа
+    # Первый зарегистрированный становится админом автоматически
     role = "admin" if db.query(UserDB).count() == 0 else "student"
-    new_user = UserDB(username=user.username, password_hash=hashed, role=role, ip_address=request.client.host)
+    uid = "USR-" + str(uuid.uuid4())[:6].upper()
+    
+    new_user = UserDB(user_id=uid, username=user.username, password_hash=hashed, role=role)
     db.add(new_user)
     db.commit()
     return {"status": "success", "message": "Регистрация успешна!"}
@@ -126,26 +123,42 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(UserDB).filter(UserDB.username == user.username).first()
     if not db_user or not bcrypt.checkpw(user.password.encode('utf-8'), db_user.password_hash.encode('utf-8')):
         raise HTTPException(status_code=400, detail="Неверный логин или пароль!")
-    return {"status": "success", "username": db_user.username, "role": db_user.role}
+    return {
+        "status": "success", 
+        "user_id": db_user.user_id,
+        "username": db_user.username, 
+        "role": db_user.role,
+        "tariff": db_user.tariff,
+        "status_account": db_user.status
+    }
 
-@app.post("/api/admin/assign-role")
-def assign_role(data: RoleAssign, db: Session = Depends(get_db)):
-    target = db.query(UserDB).filter(UserDB.username == data.target_username).first()
-    if not target:
+# Получение списка всех пользователей для админ-панели
+@app.get("/api/admin/users")
+def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(UserDB).all()
+    return [{
+        "user_id": u.user_id,
+        "username": u.username,
+        "role": u.role,
+        "tariff": u.tariff,
+        "status": u.status
+    } for u in users]
+
+# Изменение данных конкретного пользователя по ID
+@app.post("/api/admin/user/{user_id}")
+def update_user_by_admin(user_id: str, data: UserUpdateAdmin, db: Session = Depends(get_db)):
+    user = db.query(UserDB).filter(UserDB.user_id == user_id).first()
+    if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
-    target.role = data.new_role
+    user.role = data.role
+    user.tariff = data.tariff
+    user.status = data.status
     db.commit()
-    return {"status": "success", "message": "Роль обновлена!"}
+    return {"status": "success", "message": "Профиль пользователя обновлен!"}
 
 @app.post("/api/admin/schedule")
 def add_schedule(item: ScheduleCreate, db: Session = Depends(get_db)):
     db.add(ScheduleDB(**item.dict()))
-    db.commit()
-    return {"status": "success"}
-
-@app.post("/api/admin/staff")
-def add_staff(item: StaffCreate, db: Session = Depends(get_db)):
-    db.add(StaffDB(**item.dict()))
     db.commit()
     return {"status": "success"}
 
