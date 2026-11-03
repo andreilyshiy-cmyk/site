@@ -29,6 +29,11 @@
                     <button onclick="showPage('tariffs')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Тарифы</button>
                     <button onclick="showPage('schedule')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Расписание</button>
                     <button onclick="showPage('staff')" class="px-3 py-2 rounded-xl hover:bg-slate-800/60 transition">Штаб</button>
+                    
+                    <!-- Отдельные вкладки для Администраторов/Учителей (скрыты по умолчанию) -->
+                    <button id="navUsersBtn" onclick="showPage('users')" class="hidden px-3 py-2 rounded-xl bg-purple-950/60 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 transition">👥 Пользователи</button>
+                    <button id="navReqBtn" onclick="showPage('requests')" class="hidden px-3 py-2 rounded-xl bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60 transition">📋 Заявки</button>
+
                     <button id="authNavBtn" onclick="showPage('auth')" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold transition shadow-lg shadow-cyan-500/20">Войти</button>
                 </nav>
             </div>
@@ -45,7 +50,7 @@
                     Инвестируйте в знания, <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">которые меняют жизнь</span>
                 </h1>
                 <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10">
-                    Современная платформа с персональным трекингом и управлением обучением.
+                    Современная образовательная платформа с персональным трекингом.
                 </p>
                 <div class="flex justify-center gap-4">
                     <button onclick="showPage('tariffs')" class="bg-cyan-600 hover:bg-cyan-500 font-bold px-8 py-4 rounded-2xl shadow-xl shadow-cyan-600/20 transition">Выбрать тариф</button>
@@ -125,9 +130,50 @@
             <section id="page-staff" class="page-section space-y-6">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold mb-2">👨‍🏫 Преподавательский штаб</h2>
-                    <p class="text-slate-400">Наши эксперты</p>
+                    <p class="text-slate-400">Нажмите на преподавателя для просмотра подробного профиля</p>
                 </div>
                 <div id="staffGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- Модальное окно профиля учителя -->
+            <div id="teacherModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative space-y-4 shadow-2xl">
+                    <button onclick="closeTeacherModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+                    <img id="modalPhoto" src="" class="w-28 h-28 mx-auto rounded-full object-cover border-2 border-cyan-500 shadow-lg">
+                    <div class="text-center">
+                        <h3 id="modalName" class="text-xl font-black"></h3>
+                        <p id="modalSubject" class="text-xs text-cyan-400 font-bold mt-1"></p>
+                        <p id="modalExp" class="text-xs text-slate-500 mt-1"></p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm space-y-2">
+                        <p class="text-slate-300" id="modalBio"></p>
+                        <p class="text-cyan-300 font-semibold" id="modalContact"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ОТДЕЛЬНАЯ ВКЛАДКА: Управление пользователями (Только для админов) -->
+            <section id="page-users" class="page-section max-w-4xl mx-auto space-y-6">
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-black text-purple-400">👥 База пользователей</h2>
+                        <p class="text-xs text-slate-400 mt-1">Просмотр и редактирование ролей и тарифов по ID</p>
+                    </div>
+                    <button onclick="loadAllUsers()" class="text-xs bg-purple-950 text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 font-bold">Обновить</button>
+                </div>
+                <div id="usersListContainer" class="space-y-3"></div>
+            </section>
+
+            <!-- ОТДЕЛЬНАЯ ВКЛАДКА: Заявки на обучение (Только для админов) -->
+            <section id="page-requests" class="page-section max-w-4xl mx-auto space-y-6">
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-black text-emerald-400">📋 Заявки на обучение</h2>
+                        <p class="text-xs text-slate-400 mt-1">Список всех поступивших заявок от учеников</p>
+                    </div>
+                    <button onclick="loadRequests()" class="text-xs bg-emerald-950 text-emerald-300 px-4 py-2 rounded-xl border border-emerald-500/30 font-bold">Обновить</button>
+                </div>
+                <div id="requestsList" class="space-y-3"></div>
             </section>
 
             <!-- Авторизация -->
@@ -161,31 +207,13 @@
                     <button onclick="logout()" class="text-xs bg-red-900/40 hover:bg-red-800 text-red-200 p-2 px-4 rounded-xl font-bold">Выйти</button>
                 </div>
 
-                <!-- Ученический вид -->
                 <div id="studentView" class="hidden bg-slate-900/80 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
-                    <h3 class="text-xl font-bold">Ваш учебный статус</h3>
-                    <p class="text-slate-400 text-sm">Здесь отображается ваш прогресс и выбранные программы.</p>
+                    <h3 class="text-xl font-bold">Добро пожаловать в учебный кабинет!</h3>
+                    <p class="text-slate-400 text-sm">Здесь отображается ваш статус обучения.</p>
                 </div>
 
-                <!-- Преподавательский / Административный вид (С Управлением ID пользователей) -->
+                <!-- Панель администратора для добавления расписания -->
                 <div id="adminView" class="hidden space-y-6">
-                    <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl">
-                        <h3 class="text-xl font-bold mb-4">📋 Заявки на обучение</h3>
-                        <div id="requestsList" class="space-y-3">Загрузка...</div>
-                    </div>
-
-                    <!-- Панель управления пользователями и их ID -->
-                    <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-xl font-bold">👥 База пользователей и профили (по ID)</h3>
-                            <button onclick="loadAllUsers()" class="text-xs bg-cyan-950 text-cyan-300 px-3 py-1.5 rounded-lg border border-cyan-500/30">Обновить список</button>
-                        </div>
-                        <div id="usersListContainer" class="space-y-3">
-                            <!-- Список пользователей подгружается динамически -->
-                        </div>
-                    </div>
-
-                    <!-- Добавление расписания -->
                     <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-4">
                         <h3 class="text-xl font-bold">➕ Добавить занятие в расписание</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -203,7 +231,7 @@
     </div>
 
     <script>
-        const API_URL = "https://site-34ib.onrender.com"; // Замените на ваш актуальный URL бэкенда
+        const API_URL = "https://site-34ib.onrender.com"; // Замените на ваш актуальный URL
         let currentUser = null;
 
         function showPage(id) {
@@ -242,7 +270,7 @@
             });
             let json = await res.json();
             if(!res.ok) return alert(json.detail);
-            alert("Регистрация успешна! Теперь войдите.");
+            alert("Регистрация успешна! Первый аккаунт получает права админа.");
             switchAuth('login');
         }
 
@@ -262,21 +290,25 @@
             
             document.getElementById('cabTitle').innerText = `👋 ${json.username}`;
             document.getElementById('cabRole').innerText = `Роль: ${json.role}`;
-            document.getElementById('cabId').innerText = `ID профиля: ${json.user_id}`;
+            document.getElementById('cabId').innerText = `ID: #${json.user_id}`;
 
             if(json.role === 'admin' || json.role === 'teacher') {
+                // Показываем отдельные вкладки в шапке
+                document.getElementById('navUsersBtn').classList.remove('hidden');
+                document.getElementById('navReqBtn').classList.remove('hidden');
                 document.getElementById('adminView').classList.remove('hidden');
                 document.getElementById('studentView').classList.add('hidden');
                 loadRequests();
                 loadAllUsers();
             } else {
+                document.getElementById('navUsersBtn').classList.add('hidden');
+                document.getElementById('navReqBtn').classList.add('hidden');
                 document.getElementById('adminView').classList.add('hidden');
                 document.getElementById('studentView').classList.remove('hidden');
             }
             showPage('cabinet');
         }
 
-        // Загрузка списка всех пользователей для админа с возможностью редактирования по ID
         async function loadAllUsers() {
             let res = await fetch(`${API_URL}/api/admin/users`);
             let users = await res.json();
@@ -286,7 +318,7 @@
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
                     <div class="flex justify-between items-center">
                         <div>
-                            <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded font-bold">${u.user_id}</span>
+                            <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded font-bold">ID: #${u.user_id}</span>
                             <h4 class="font-bold text-base mt-1">${u.username}</h4>
                         </div>
                         <span class="text-xs text-slate-400">Статус: <b>${u.status}</b></span>
@@ -312,7 +344,7 @@
                             </select>
                         </div>
                     </div>
-                    <button onclick="updateUser('${u.user_id}')" class="w-full bg-cyan-700 hover:bg-cyan-600 text-xs font-bold py-2 rounded-lg transition">Сохранить изменения профиля</button>
+                    <button onclick="updateUser(${u.user_id})" class="w-full bg-purple-700 hover:bg-purple-600 text-xs font-bold py-2 rounded-lg transition">Сохранить профиль #${u.user_id}</button>
                 </div>`;
             });
             document.getElementById('usersListContainer').innerHTML = html || "<p class='text-slate-500'>Нет пользователей.</p>";
@@ -328,8 +360,38 @@
                 body: JSON.stringify({role, tariff, status})
             });
             let json = await res.json();
-            alert(json.message || "Успешно обновлено!");
+            alert(json.message || "Успешно!");
             loadAllUsers();
+        }
+
+        async function loadStaff() {
+            let res = await fetch(`${API_URL}/api/staff`);
+            let items = await res.json();
+            let html = "";
+            items.forEach(s => {
+                html += `<div onclick='openTeacherModal(${JSON.stringify(s)})' class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 text-center cursor-pointer hover:border-cyan-500/60 transition shadow-lg">
+                    <img src="${s.photo_url}" class="w-24 h-24 mx-auto rounded-full object-cover mb-4 border-2 border-cyan-500/30">
+                    <h4 class="font-bold text-lg">${s.name}</h4>
+                    <p class="text-xs text-cyan-400 font-bold mt-1">${s.subject}</p>
+                    <p class="text-xs text-slate-500 mt-2">${s.experience}</p>
+                    <span class="inline-block mt-4 text-xs bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 font-bold">Открыть профиль</span>
+                </div>`;
+            });
+            document.getElementById('staffGrid').innerHTML = html;
+        }
+
+        function openTeacherModal(s) {
+            document.getElementById('modalPhoto').src = s.photo_url;
+            document.getElementById('modalName').innerText = s.name;
+            document.getElementById('modalSubject').innerText = s.subject;
+            document.getElementById('modalExp').innerText = s.experience;
+            document.getElementById('modalBio').innerText = s.bio;
+            document.getElementById('modalContact').innerText = s.contact_info;
+            document.getElementById('teacherModal').classList.remove('hidden');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacherModal').classList.add('hidden');
         }
 
         async function addSchedule() {
@@ -383,7 +445,7 @@
             let items = await res.json();
             let html = "";
             items.forEach(i => {
-                html += `<div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/40 transition">
+                html += `<div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
                     <span class="text-xs bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full font-bold border border-cyan-500/30">${i.day} • ${i.time}</span>
                     <h4 class="font-bold text-lg mt-3">${i.subject}</h4>
                     <p class="text-sm text-slate-400 mt-1">Преподаватель: ${i.teacher}</p>
@@ -392,23 +454,10 @@
             document.getElementById('scheduleGrid').innerHTML = html;
         }
 
-        async function loadStaff() {
-            let res = await fetch(`${API_URL}/api/staff`);
-            let items = await res.json();
-            let html = "";
-            items.forEach(s => {
-                html += `<div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 text-center">
-                    <img src="${s.photo_url}" class="w-24 h-24 mx-auto rounded-full object-cover mb-4 border-2 border-cyan-500/30 shadow-lg">
-                    <h4 class="font-bold text-lg">${s.name}</h4>
-                    <p class="text-xs text-cyan-400 font-bold mt-1">${s.subject}</p>
-                    <p class="text-xs text-slate-500 mt-2">${s.experience}</p>
-                </div>`;
-            });
-            document.getElementById('staffGrid').innerHTML = html;
-        }
-
         function logout() {
             currentUser = null;
+            document.getElementById('navUsersBtn').classList.add('hidden');
+            document.getElementById('navReqBtn').classList.add('hidden');
             document.getElementById('authNavBtn').innerText = "Войти";
             document.getElementById('authNavBtn').onclick = () => showPage('auth');
             showPage('home');
