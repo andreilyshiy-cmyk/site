@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import bcrypt
 
+# Использование локальной базы данных SQLite
 SQLALCHEMY_DATABASE_URL = "sqlite:///./platform.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -62,8 +63,10 @@ app.add_middleware(
 
 def get_db():
     db = SessionLocal()
-    try: yield db
-    finally: db.close()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class UserRegister(BaseModel):
     username: str
@@ -107,7 +110,9 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     if db.query(UserDB).filter(UserDB.username == user.username).first():
         raise HTTPException(status_code=400, detail="Логин уже занят!")
     hashed = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    new_user = UserDB(username=user.username, password_hash=hashed, role="guest")
+    # Роль по умолчанию для всех — guest
+    role = "admin" if db.query(UserDB).count() == 0 else "guest"
+    new_user = UserDB(username=user.username, password_hash=hashed, role=role)
     db.add(new_user)
     db.commit()
     return {"status": "success", "message": "Регистрация успешна!"}
@@ -128,6 +133,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "lesson_link": db_user.lesson_link
     }
 
+# Все пользователи (Админ-панель)
 @app.get("/api/admin/users")
 def get_all_users(db: Session = Depends(get_db)):
     return [{
@@ -140,10 +146,28 @@ def get_all_users(db: Session = Depends(get_db)):
         "lesson_link": u.lesson_link
     } for u in db.query(UserDB).all()]
 
+# Запрос конкретного пользователя по ID (Логика medusa-cheat)
+@app.get("/api/admin/user/{user_id}")
+def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(UserDB).filter(UserDB.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    return {
+        "user_id": user.id,
+        "username": user.username,
+        "role": user.role,
+        "tariff": user.tariff,
+        "status": user.status,
+        "teacher_name": user.teacher_name,
+        "lesson_link": user.lesson_link
+    }
+
+# Сохранение/обновление профиля конкретного пользователя
 @app.post("/api/admin/user/{user_id}")
 def update_user_by_admin(user_id: int, data: UserUpdateAdmin, db: Session = Depends(get_db)):
     user = db.query(UserDB).filter(UserDB.id == user_id).first()
-    if not user: raise HTTPException(status_code=404, detail="Пользователь не найден")
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     user.role = data.role
     user.tariff = data.tariff
     user.status = data.status
@@ -151,6 +175,16 @@ def update_user_by_admin(user_id: int, data: UserUpdateAdmin, db: Session = Depe
     user.lesson_link = data.lesson_link or ""
     db.commit()
     return {"status": "success", "message": f"Профиль #{user_id} сохранен!"}
+
+# Удаление пользователя
+@app.delete("/api/admin/user/{user_id}")
+def delete_user_by_admin(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(UserDB).filter(UserDB.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    db.delete(user)
+    db.commit()
+    return {"status": "success", "message": f"Пользователь #{user_id} удален"}
 
 @app.get("/api/staff")
 def get_staff(db: Session = Depends(get_db)):
@@ -183,7 +217,8 @@ def add_schedule(item: ScheduleCreate, db: Session = Depends(get_db)):
 @app.delete("/api/admin/schedule/{sch_id}")
 def delete_schedule(sch_id: int, db: Session = Depends(get_db)):
     sch = db.query(ScheduleDB).filter(ScheduleDB.id == sch_id).first()
-    if not sch: raise HTTPException(status_code=404, detail="Урок не найден")
+    if not sch:
+        raise HTTPException(status_code=404, detail="Урок не найден")
     db.delete(sch)
     db.commit()
     return {"status": "success", "message": "Урок удален!"}
@@ -201,7 +236,8 @@ def get_requests(db: Session = Depends(get_db)):
 @app.post("/api/admin/request/{req_id}")
 def update_request_status(req_id: int, data: RequestUpdateStatus, db: Session = Depends(get_db)):
     req = db.query(RequestDB).filter(RequestDB.id == req_id).first()
-    if not req: raise HTTPException(status_code=404, detail="Заявка не найдена")
+    if not req:
+        raise HTTPException(status_code=404, detail="Заявка не найдена")
     req.status = data.status
     db.commit()
     return {"status": "success", "message": "Статус обновлен!"}
